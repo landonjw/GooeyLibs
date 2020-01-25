@@ -36,7 +36,7 @@ public class GooeyLibs {
     /** The mod name of the library. */
     public static final String MOD_NAME = "GooeyLibs";
     /** The version of the library. */
-    public static final String VERSION = "1.0.0";
+    public static final String VERSION = "1.0.1";
 
     /**
      * Registers the inventory API.

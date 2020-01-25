@@ -43,6 +43,12 @@ public class BasePage implements Page {
     private Consumer<PageAction> openBehavior, closeBehavior;
 
     /**
+     * This determines if the page should suppress the {@link #onClose(EntityPlayerMP)} method.
+     * This is used to prevent the page from invoking the method when it is simply reopening itself.
+     */
+    private boolean closeSilently;
+
+    /**
      * Constructor for the page.
      *
      * @param template      the template for the page
@@ -180,6 +186,8 @@ public class BasePage implements Page {
     @Override
     public void forceOpenPage(@Nullable EntityPlayerMP player) {
         if(player != null){
+            // This causes the page to not invoke it's onClose method when it is reopening itself.
+            closeSilently = true;
             // Closes player's current container and sets it to new container for page.
             player.closeContainer();
             UIInventory inventory = new UIInventory(this, player);
@@ -198,6 +206,7 @@ public class BasePage implements Page {
             player.connection.sendPacket(openWindow);
             container.detectAndSendChanges();
             inventory.markDirty();
+            closeSilently = false;
 
             // For each slot in the inventory, set the contents of the page's template.
             for(int row = 0; row < template.getRows(); row++){
@@ -228,7 +237,7 @@ public class BasePage implements Page {
     /** {@inheritDoc} */
     @Override
     public void onClose(@Nonnull EntityPlayerMP player) {
-        if(closeBehavior != null){
+        if(closeBehavior != null && !closeSilently){
             PageAction action = new PageAction(this, player, PageAction.Type.Close);
             closeBehavior.accept(action);
         }
