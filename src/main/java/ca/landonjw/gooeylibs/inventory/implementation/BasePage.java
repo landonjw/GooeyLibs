@@ -85,7 +85,8 @@ public class BasePage implements Page {
     /** {@inheritDoc} */
     @Override
     public String getTitle() {
-        return title;
+        return title.replace(Page.TOTAL_PAGES_PLACEHOLDER, "" + getTotalPages())
+                .replace(Page.CURRENT_PAGE_PLACEHOLDER, "" + getPageNumber());
     }
 
     /** {@inheritDoc} */

@@ -23,11 +23,6 @@ import java.util.Optional;
  */
 public class LinkedButton implements Button {
 
-    /** The placeholder to substitute current page number button is on. */
-    public static final String CURRENT_PAGE_PLACEHOLDER = "{current}";
-    /** The placeholder to substitute total page number. */
-    public static final String TOTAL_PAGES_PLACEHOLDER = "{total}";
-
     /** The button that links to a page. */
     private Button button;
     /** The page that is being linked to. */
@@ -77,8 +72,8 @@ public class LinkedButton implements Button {
         if(button.getType() ==  ButtonType.PageInfo){
             ItemStack display = button.getDisplay().copy();
             String displayName = display.getDisplayName();
-            displayName = displayName.replace(CURRENT_PAGE_PLACEHOLDER, "" + page.getPageNumber());
-            displayName = displayName.replace(TOTAL_PAGES_PLACEHOLDER, "" + page.getTotalPages());
+            displayName = displayName.replace(Page.CURRENT_PAGE_PLACEHOLDER, "" + page.getPageNumber());
+            displayName = displayName.replace(Page.TOTAL_PAGES_PLACEHOLDER, "" + page.getTotalPages());
             display.setStackDisplayName(displayName);
             return display;
         }

@@ -21,6 +21,11 @@ import java.util.function.Consumer;
  */
 public interface Page {
 
+    /** The placeholder to substitute current page number. */
+    String CURRENT_PAGE_PLACEHOLDER = "{current}";
+    /** The placeholder to substitute total page number. */
+    String TOTAL_PAGES_PLACEHOLDER = "{total}";
+
     /**
      * Gets the {@link Template} that is used in the page.
      *

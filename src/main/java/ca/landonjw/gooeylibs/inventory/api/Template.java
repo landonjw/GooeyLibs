@@ -51,6 +51,7 @@ public interface Template {
     /**
      * Returns a new {@link Builder} for a template.
      *
+     * @param rows the number of rows in the template
      * @return a new builder for a template
      * @throws IllegalArgumentException if number of rows is below or equal to 0
      */
