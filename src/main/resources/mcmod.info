@@ -1,0 +1,18 @@
+[
+  {
+    "modid": "gooeylibs",
+    "name": "GooeyLibs",
+    "description": "A collection of useful tools for creating user interfaces in Forge.",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "",
+    "updateUrl": "",
+    "authorList": [
+      "landonjw"
+    ],
+    "credits": "Waterdude",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": []
+  }
+]
