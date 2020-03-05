@@ -2,8 +2,11 @@ package ca.landonjw.gooeylibs.inventory.internal;
 
 import ca.landonjw.gooeylibs.inventory.api.Page;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.network.play.client.CPacketCloseWindow;
+import net.minecraft.network.play.server.SPacketCloseWindow;
 import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -47,7 +50,13 @@ public class FuturePageListener {
 
             //If the player's open containiner is their inventory, force open the page.
             if(player != null && player.openContainer == player.inventoryContainer){
-                page.forceOpenPage(player);
+                CPacketCloseWindow pclient = new CPacketCloseWindow();
+                ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, player.openContainer.windowId, 0);
+                SPacketCloseWindow pserver = new SPacketCloseWindow(player.openContainer.windowId);
+                player.connection.processCloseWindow(pclient);
+                player.connection.sendPacket(pserver);
+                new Waiter(() -> page.forceOpenPage(player), 1);
+                //page.forceOpenPage(player);
                 futurePagesIterator.remove();
             }
         }

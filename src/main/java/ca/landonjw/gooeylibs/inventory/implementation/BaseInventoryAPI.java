@@ -48,12 +48,7 @@ public class BaseInventoryAPI implements InventoryAPI {
     public void closePlayerInventory(@Nullable EntityPlayerMP player){
         if(player != null){
             CPacketCloseWindow pclient = new CPacketCloseWindow();
-            ObfuscationReflectionHelper.setPrivateValue(
-                    CPacketCloseWindow.class,
-                    pclient,
-                    player.openContainer.windowId,
-                    0
-            );
+            ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, player.openContainer.windowId, 0);
             SPacketCloseWindow pserver = new SPacketCloseWindow(player.openContainer.windowId);
             player.connection.processCloseWindow(pclient);
             player.connection.sendPacket(pserver);
