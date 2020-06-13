@@ -243,6 +243,27 @@ public class BaseTemplate implements Template {
 
         /** {@inheritDoc} */
         @Override
+        public Template.Builder checker(int startRow, int startCol, int length, int width, @Nullable Button even, @Nullable Button odd) {
+            int endRow = startRow + length;
+            int endCol = startCol + width;
+
+            for(int row = startRow; row < endRow && row < rows; row++){
+                for(int col = startCol; col < endCol && col < NUM_COLUMNS; col++){
+                    if(row >= 0 && col >= 0){
+                        if(row % 2 == 0 && col % 2 == 0 || row % 2 != 0 && col % 2 != 0){
+                            buttons[row][col] = even;
+                        }
+                        else{
+                            buttons[row][col] = odd;
+                        }
+                    }
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public Template.Builder reset() {
             buttons = new Button[buttons.length][9];
             return this;

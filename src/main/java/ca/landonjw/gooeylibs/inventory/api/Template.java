@@ -161,6 +161,19 @@ public interface Template {
         Builder fill(@Nullable Button button);
 
         /**
+         * Creates a checker board alternating between two {@link Button}s between supplied dimensions.
+         *
+         * @param startRow the row of the top left corner of the border
+         * @param startCol the column of the top left corner of the border
+         * @param length   the length of the border
+         * @param width    the width of the border
+         * @param even     the button to put on even squares
+         * @param odd      the button to put on off squares
+         * @return builder with checker pattern created from buttons
+         */
+        Builder checker(int startRow, int startCol, int length, int width, @Nullable Button even, @Nullable Button odd);
+
+        /**
          * Resets the builder to it's default state.
          *
          * @return the builder with values reset
