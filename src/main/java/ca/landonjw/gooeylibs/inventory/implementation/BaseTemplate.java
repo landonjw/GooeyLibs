@@ -6,6 +6,7 @@ import ca.landonjw.gooeylibs.inventory.api.Template;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.Objects;
 
 /**
@@ -141,10 +142,34 @@ public class BaseTemplate implements Template {
 
         /** {@inheritDoc} */
         @Override
+        public Template.Builder flexRow(int row, @Nonnull Iterable<Button> buttons) {
+            Iterator<Button> iterator = buttons.iterator();
+            if(row >= 0 && row < rows){
+                for(int col = 0; col < NUM_COLUMNS; col++){
+                    this.buttons[row][col] = (iterator.hasNext()) ? iterator.next() : null;
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public Template.Builder column(int col, @Nullable Button button) {
             if(col >= 0 && col < NUM_COLUMNS){
                 for(int row = 0; row < rows; row++){
                     buttons[row][col] = button;
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Template.Builder flexColumn(int col, @Nonnull Iterable<Button> buttons) {
+            Iterator<Button> iterator = buttons.iterator();
+            if(col >= 0 && col < NUM_COLUMNS){
+                for(int row = 0; row < rows; row++){
+                    this.buttons[row][col] = (iterator.hasNext()) ? iterator.next() : null;
                 }
             }
             return this;
@@ -179,9 +204,44 @@ public class BaseTemplate implements Template {
 
         /** {@inheritDoc} */
         @Override
+        public Template.Builder flexLine(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nonnull Iterable<Button> buttons) {
+            Objects.requireNonNull(lineType, "line type must not be null");
+            Iterator<Button> iterator = buttons.iterator();
+            if(lineType == LineType.Horizontal){
+                int endCol = startCol + length;
+                if(startRow >= 0 && startRow < rows){
+                    for(int col = startCol; col < endCol; col++){
+                        if(col >= 0 && col < NUM_COLUMNS){
+                            this.buttons[startRow][col] = (iterator.hasNext()) ? iterator.next() : null;
+                        }
+                    }
+                }
+            }
+            else if(lineType == LineType.Vertical){
+                int endRow = startRow + length;
+                if(startCol >= 0 && startCol < NUM_COLUMNS){
+                    for(int row = startRow; row < endRow; row++){
+                        if(row >= 0 && row < rows){
+                            this.buttons[row][startCol] = (iterator.hasNext()) ? iterator.next() : null;
+                        }
+                    }
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public Template.Builder square(int startRow, int startCol, int size, @Nullable Button button) {
             return rectangle(startRow, startCol, size, size, button);
         }
+
+        /** {@inheritDoc} */
+        @Override
+        public Template.Builder flexSquare(int startRow, int startColumn, int size, @Nonnull Iterable<Button> buttons) {
+            return flexRectangle(startRow, startColumn, size, size, buttons);
+        }
+
 
         /** {@inheritDoc} */
         @Override
@@ -193,6 +253,23 @@ public class BaseTemplate implements Template {
                 for(int col = startCol; col < endCol && col < NUM_COLUMNS; col++){
                     if(row >= 0 && col >= 0){
                         buttons[row][col] = button;
+                    }
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Template.Builder flexRectangle(int startRow, int startCol, int length, int width, @Nullable Iterable<Button> buttons) {
+            Iterator<Button> iterator = buttons.iterator();
+            int endRow = startRow + length;
+            int endCol = startCol + width;
+
+            for(int row = startRow; row < endRow && row < rows; row++){
+                for(int col = startCol; col < endCol && col < NUM_COLUMNS; col++){
+                    if(row >= 0 && col >= 0){
+                        this.buttons[row][col] = (iterator.hasNext()) ? iterator.next() : null;
                     }
                 }
             }
@@ -230,11 +307,55 @@ public class BaseTemplate implements Template {
 
         /** {@inheritDoc} */
         @Override
+        public Template.Builder flexBorder(int startRow, int startCol, int length, int width, @Nullable Iterable<Button> buttons) {
+            Iterator<Button> iterator = buttons.iterator();
+            int endRow = startRow + (length - 1);
+            int endCol = startCol + (width - 1);
+
+            for(int row = startRow; row <= endRow && row < rows; row++){
+                if(row >= 0){
+                    if(startCol >= 0 && startCol < NUM_COLUMNS){
+                        this.buttons[row][startCol] = (iterator.hasNext()) ? iterator.next() : null;
+                    }
+                    if(endCol >= 0 && endCol < NUM_COLUMNS){
+                        this.buttons[row][endCol] = (iterator.hasNext()) ? iterator.next() : null;
+                    }
+                }
+            }
+            for(int col = startCol; col <= endCol && col < NUM_COLUMNS; col++){
+                if(col >= 0){
+                    if(startRow >= 0 && startRow < rows){
+                        this.buttons[startRow][col] = (iterator.hasNext()) ? iterator.next() : null;
+                    }
+                    if(endRow >= 0 && endRow < rows){
+                        this.buttons[endRow][col] = (iterator.hasNext()) ? iterator.next() : null;
+                    }
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public Template.Builder fill(@Nullable Button button) {
             for(int row = 0; row < rows; row++){
                 for(int col = 0; col < NUM_COLUMNS; col++){
                     if(buttons[row][col] == null){
                         buttons[row][col] = button;
+                    }
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Template.Builder flexFill(@Nonnull Iterable<Button> buttons) {
+            Iterator<Button> iterator = buttons.iterator();
+            for(int row = 0; row < rows; row++){
+                for(int col = 0; col < NUM_COLUMNS; col++){
+                    if(this.buttons[row][col] == null){
+                        this.buttons[row][col] = (iterator.hasNext()) ? iterator.next() : null;
                     }
                 }
             }
@@ -255,6 +376,29 @@ public class BaseTemplate implements Template {
                         }
                         else{
                             buttons[row][col] = odd;
+                        }
+                    }
+                }
+            }
+            return this;
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public Template.Builder flexChecker(int startRow, int startCol, int length, int width, @Nonnull Iterable<Button> even, @Nonnull Iterable<Button> odd) {
+            Iterator<Button> evenIterator = even.iterator();
+            Iterator<Button> oddIterator = odd.iterator();
+            int endRow = startRow + length;
+            int endCol = startCol + width;
+
+            for(int row = startRow; row < endRow && row < rows; row++){
+                for(int col = startCol; col < endCol && col < NUM_COLUMNS; col++){
+                    if(row >= 0 && col >= 0){
+                        if(row % 2 == 0 && col % 2 == 0 || row % 2 != 0 && col % 2 != 0){
+                            buttons[row][col] = (evenIterator.hasNext()) ? evenIterator.next() : null;
+                        }
+                        else{
+                            buttons[row][col] = (oddIterator.hasNext()) ? oddIterator.next() : null;
                         }
                     }
                 }

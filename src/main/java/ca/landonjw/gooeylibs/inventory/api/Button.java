@@ -87,6 +87,20 @@ public interface Button {
     }
 
     /**
+     * Returns a new {@link Button} instance of a given item and display name, with no behavior.
+     *
+     * @param item        the item to set as display for the button
+     * @param displayName the display name of the button
+     * @return a new button instance with item as display
+     */
+    static Button of(@Nonnull ItemStack item, String displayName){
+        return InventoryAPI.getInstance().buttonBuilder()
+                .item(item)
+                .displayName(displayName)
+                .build();
+    }
+
+    /**
      * Interface for a builder that creates a {@link Button}.
      *
      * @author landonjw
