@@ -1,8 +1,10 @@
 package ca.landonjw.gooeylibs;
 
-import ca.landonjw.gooeylibs.inventory.api.InventoryAPI;
+import ca.landonjw.gooeylibs.implementation.commands.OpenContainer;
+import ca.landonjw.gooeylibs.implementation.commands.OpenPage;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 /**
  * <h1>GooeyLibs</h1>
@@ -20,32 +22,38 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
  * discord channel <a href="https://discord.gg/fsNq4Jz">here</a>.</p>
  *
  * @author landonjw
- * @since  1.0.0
+ * @since 1.0.0
  */
 @Mod(
-        modid = GooeyLibs.MOD_ID,
-        name = GooeyLibs.MOD_NAME,
-        version = GooeyLibs.VERSION,
-        acceptableRemoteVersions = "*",
-        serverSideOnly = true
+		modid = GooeyLibs.MOD_ID,
+		name = GooeyLibs.MOD_NAME,
+		version = GooeyLibs.VERSION,
+		acceptableRemoteVersions = "*",
+		serverSideOnly = true
 )
 public class GooeyLibs {
 
-    /** The mod ID of the library. */
-    public static final String MOD_ID = "gooeylibs";
-    /** The mod name of the library. */
-    public static final String MOD_NAME = "GooeyLibs";
-    /** The version of the library. */
-    public static final String VERSION = "1.0.5";
+	/** The mod ID of the library. */
+	public static final String MOD_ID = "gooeylibs";
+	/** The mod name of the library. */
+	public static final String MOD_NAME = "GooeyLibs";
+	/** The version of the library. */
+	public static final String VERSION = "2.0.0";
 
-    /**
-     * Registers the inventory API.
-     *
-     * @param event the event called during mod startup
-     */
-    @Mod.EventHandler
-    public void preinit(FMLPreInitializationEvent event) {
-        InventoryAPI.register();
-    }
+	/**
+	 * Registers the inventory API.
+	 *
+	 * @param event the event called during mod startup
+	 */
+	@Mod.EventHandler
+	public void preinit(FMLPreInitializationEvent event) {
+		//		InventoryAPI.register();
+	}
+
+	@Mod.EventHandler
+	public void serverStarting(FMLServerStartingEvent event) {
+		event.registerServerCommand(new OpenContainer());
+		event.registerServerCommand(new OpenPage());
+	}
 
 }
