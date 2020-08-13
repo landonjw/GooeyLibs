@@ -1,103 +1,139 @@
 package ca.landonjw.gooeylibs.internal.inventory;
 
-import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.button.ButtonAction;
-import ca.landonjw.gooeylibs.api.page.Page;
+import ca.landonjw.gooeylibs.api.page.IPage;
 import ca.landonjw.gooeylibs.api.page.PageAction;
-import ca.landonjw.gooeylibs.api.template.Template;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.server.SPacketOpenWindow;
 import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nonnull;
 
 public class GooeyContainer extends Container {
 
+	private static MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+
 	private EntityPlayerMP player;
 
-	private Page page;
-	private Template template;
+	private IPage page;
 
+	private String title;
+	private int slotsDisplayed;
+
+	private long lastQuickMoveClickTick;
 	private boolean closing;
 
-	public GooeyContainer(@Nonnull EntityPlayerMP player, @Nonnull Page page, int windowId) {
+	public GooeyContainer(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
 		this.player = player;
+		this.windowId = 1;
+
 		this.page = page;
-		this.template = page.getTemplate();
 
-		initContainerSlots();
-		initPlayerContainerSlots();
-		initPlayerInventorySlots();
-		this.windowId = windowId;
+		this.title = page.getTitle();
+		this.slotsDisplayed = page.getTemplate().getSlots();
 	}
 
-	private void initContainerSlots() {
-		for(int row = 0; row < template.getRows(); row++) {
-			for(int col = 0; col < 9; col++) {
-				GooeySlot slot = new GooeySlot(row, col, template.getButtons()[row][col]);
-				addSlotToContainer(slot);
-			}
-		}
-	}
+	public void open() {
+		player.closeContainer();
+		player.openContainer = this;
+		player.currentWindowId = windowId;
 
-	private void initPlayerContainerSlots() {
-		int yAxisOffset = (template.getRows() - 4) * 18 + 103;
-		for(int row = 0; row < 3; row++) {
-			for(int col = 0; col < 9; col++) {
+		SPacketOpenWindow openWindow = new SPacketOpenWindow(
+				player.currentWindowId,
+				"minecraft:container",
+				new TextComponentString(page.getTitle()),
+				page.getTemplate().getSlots()
+		);
+		player.connection.sendPacket(openWindow);
 
-				int slotIndex = row * 9 + col + 9;
-				int slotXPos = 8 + col * 18;
-				int slotYPos = row * 18 + yAxisOffset;
-
-				Slot slot = new Slot(player.inventory, slotIndex, slotXPos, slotYPos);
-				addSlotToContainer(slot);
-			}
-		}
-	}
-
-	private void initPlayerInventorySlots() {
-		int yAxisOffset = (template.getRows() - 4) * 18 + 161;
-		for(int col = 0; col < 9; col++) {
-			addSlotToContainer(new Slot(player.inventory, col, 8 + col * 18, yAxisOffset));
-		}
-	}
-
-	@Override
-	protected Slot addSlotToContainer(Slot slot) {
-		slot.slotNumber = this.inventorySlots.size();
-		this.inventorySlots.add(slot);
-		this.inventoryItemStacks.add(slot.getStack());
-		return slot;
-	}
-
-	@Override
-	public boolean canInteractWith(EntityPlayer player) {
-		return true;
+		player.sendAllContents(player.openContainer, page.getTemplate().toContainerDisplay());
+		player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+		page.onOpen(new PageAction(player, page));
 	}
 
 	@Override
 	public ItemStack slotClick(int slot, int dragType, ClickType clickType, EntityPlayer playerSP) {
-		if(clickType == ClickType.QUICK_MOVE || clickType == ClickType.CLONE) {
-			player.connection.sendPacket(new SPacketSetSlot(windowId, slot, ItemStack.EMPTY));
+		if(clickType == ClickType.PICKUP_ALL) return ItemStack.EMPTY;
+
+		// Updates both containers to prevent inventory desyncs
+		render();
+
+		if(clickType == ClickType.QUICK_MOVE) {
+			player.connection.sendPacket(new SPacketSetSlot(-1, slot, ItemStack.EMPTY));
+			// Used to prevent quick moves from propagating and invoking button calls.
+			// Allows for one quick move to be invoked each tick on the container.
+			if(lastQuickMoveClickTick == server.getTickCounter()) return ItemStack.EMPTY;
+			lastQuickMoveClickTick = server.getTickCounter();
+		}
+		else if(clickType == ClickType.CLONE) {
+			player.connection.sendPacket(new SPacketSetSlot(-1, slot, ItemStack.EMPTY));
 		}
 
-		if(slot < template.getRows() * 9 && slot >= 0) {
-			Button button = template.getButtons()[slot / 9][slot % 9];
+		//Invokes the button's behaviour if there is a valid button in the slot clicked.
+		if(slot >= page.getTemplate().getSlots() || slot < 0) return ItemStack.EMPTY;
+
+		page.getTemplate().getButton(slot).ifPresent((button) -> {
 			button.onClick(new ButtonAction(player, clickType, button, page));
-		}
-
+		});
 		return ItemStack.EMPTY;
 	}
 
+	public IPage getPage() {
+		return page;
+	}
+
+	public void setPage(IPage page) {
+		if(page == this.page) {
+			render();
+		}
+		else {
+			this.page = page;
+			render();
+			page.onOpen(new PageAction(player, page));
+		}
+	}
+
+	public void render() {
+		boolean updateContainer = false;
+		if(!title.equals(page.getTitle())) updateContainer = true;
+		if(slotsDisplayed != page.getTemplate().getSlots()) updateContainer = true;
+
+		if(updateContainer) {
+			SPacketOpenWindow openWindow = new SPacketOpenWindow(
+					player.currentWindowId,
+					"minecraft:container",
+					new TextComponentString(page.getTitle()),
+					page.getTemplate().getSlots()
+			);
+			player.connection.sendPacket(openWindow);
+		}
+
+		this.title = page.getTitle();
+		this.slotsDisplayed = page.getTemplate().getSlots();
+
+		player.sendAllContents(player.openContainer, page.getTemplate().toContainerDisplay());
+		player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+	}
+
 	@Override
-	public void onContainerClosed(EntityPlayer playerSP) {
+	public boolean canInteractWith(EntityPlayer playerSP) {
+		return true;
+	}
+
+	@Override
+	public void onContainerClosed(EntityPlayer playerIn) {
 		if(closing) return;
 
 		closing = true;
+
+		System.out.println("Invoking close action");
 		PageAction action = new PageAction(player, page);
 		page.onClose(action);
 	}

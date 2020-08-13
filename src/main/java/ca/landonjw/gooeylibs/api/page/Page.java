@@ -1,66 +1,117 @@
 package ca.landonjw.gooeylibs.api.page;
 
-import ca.landonjw.gooeylibs.api.button.Button;
-import ca.landonjw.gooeylibs.api.template.Template;
+import ca.landonjw.gooeylibs.api.button.IButton;
+import ca.landonjw.gooeylibs.api.template.ITemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Optional;
 import java.util.function.Consumer;
 
-public interface Page {
+public class Page implements IPage {
 
-	Template getTemplate();
+	private ITemplate template;
+	private String title;
+	private Consumer<PageAction> openBehaviour, closeBehaviour;
 
-	String getTitle();
-
-	int getPageNumber();
-
-	int getTotalPages();
-
-	Optional<Page> getPreviousPage();
-
-	void setPreviousPage(@Nullable Page page);
-
-	Optional<Page> getNextPage();
-
-	void setNextPage(@Nullable Page page);
-
-	Optional<Page> getPage(int pageNumber);
-
-	void onOpen(@Nonnull PageAction action);
-
-	void onClose(@Nonnull PageAction action);
-
-	Page clone();
-
-	static PageBuilder builder() {
-		return new BasePage.BasePageBuilder();
+	protected Page(PageBuilder builder) {
+		this.template = builder.template;
+		this.title = builder.title;
+		this.openBehaviour = builder.openBehaviour;
+		this.closeBehaviour = builder.closeBehaviour;
 	}
 
-	interface PageBuilder {
+	@Override
+	public ITemplate getTemplate() {
+		return template;
+	}
 
-		PageBuilder title(@Nullable String title);
+	@Override
+	public String getTitle() {
+		return title;
+	}
 
-		PageBuilder template(@Nonnull Template template);
+	@Override
+	public void onOpen(@Nonnull PageAction action) {
+		if(openBehaviour != null) openBehaviour.accept(action);
+	}
 
-		PageBuilder previousPage(@Nullable Page page);
+	@Override
+	public void onClose(@Nonnull PageAction action) {
+		if(closeBehaviour != null) closeBehaviour.accept(action);
+	}
 
-		PageBuilder nextPage(@Nullable Page page);
+	public static PageBuilder builder() {
+		return new PageBuilder();
+	}
 
-		PageBuilder replacePlaceholders(@Nonnull Iterable<Button> buttons);
+	public static class PageBuilder {
 
-		PageBuilder onOpen(@Nonnull Consumer<PageAction> behaviour);
+		private String title = "";
+		private ITemplate template;
+		private Consumer<PageAction> openBehaviour, closeBehaviour;
 
-		PageBuilder onOpen(@Nonnull Runnable behaviour);
+		public PageBuilder() {
 
-		PageBuilder onClose(@Nonnull Consumer<PageAction> behaviour);
+		}
 
-		PageBuilder onClose(@Nonnull Runnable behaviour);
+		public PageBuilder(Page page) {
+			this.title = page.getTitle();
+			this.template = page.getTemplate();
+			this.openBehaviour = page.openBehaviour;
+			this.closeBehaviour = page.closeBehaviour;
+		}
 
-		PageBuilder reset();
+		public PageBuilder title(@Nullable String title) {
+			this.title = (title != null) ? title : "";
+			return this;
+		}
 
-		Page build();
+		public PageBuilder template(@Nonnull ITemplate template) {
+			this.template = template;
+			return this;
+		}
+
+		public PageBuilder replacePlaceholders(@Nonnull Iterable<IButton> buttons) {
+			//TODO
+			return this;
+		}
+
+		public PageBuilder onOpen(@Nonnull Consumer<PageAction> behaviour) {
+			this.openBehaviour = behaviour;
+			return this;
+		}
+
+		public PageBuilder onOpen(@Nonnull Runnable behaviour) {
+			this.openBehaviour = (action) -> behaviour.run();
+			return this;
+		}
+
+		public PageBuilder onClose(@Nonnull Consumer<PageAction> behaviour) {
+			this.closeBehaviour = behaviour;
+			return this;
+		}
+
+		public PageBuilder onClose(@Nonnull Runnable behaviour) {
+			this.closeBehaviour = (action) -> behaviour.run();
+			return this;
+		}
+
+		public PageBuilder reset() {
+			this.title = "";
+			this.template = null;
+			this.openBehaviour = null;
+			this.closeBehaviour = null;
+			return this;
+		}
+
+		protected void validateBuild() {
+			if(template == null) throw new IllegalStateException("page template must be defined");
+		}
+
+		public Page build() {
+			validateBuild();
+			return new Page(this);
+		}
 
 	}
 

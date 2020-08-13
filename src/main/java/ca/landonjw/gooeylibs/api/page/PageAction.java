@@ -7,9 +7,9 @@ import javax.annotation.Nonnull;
 public class PageAction {
 
 	private EntityPlayerMP player;
-	private Page page;
+	private IPage page;
 
-	public PageAction(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
+	public PageAction(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
 		this.player = player;
 		this.page = page;
 	}
@@ -18,7 +18,7 @@ public class PageAction {
 		return player;
 	}
 
-	public Page getPage() {
+	public IPage getPage() {
 		return page;
 	}
 

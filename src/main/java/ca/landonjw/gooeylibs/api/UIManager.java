@@ -1,46 +1,43 @@
 package ca.landonjw.gooeylibs.api;
 
-import ca.landonjw.gooeylibs.api.page.Page;
+import ca.landonjw.gooeylibs.api.page.IPage;
 import ca.landonjw.gooeylibs.internal.inventory.GooeyContainer;
+import ca.landonjw.gooeylibs.internal.tasks.Task;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.play.server.SPacketOpenWindow;
-import net.minecraft.network.play.server.SPacketWindowProperty;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.network.play.client.CPacketCloseWindow;
+import net.minecraft.network.play.server.SPacketCloseWindow;
+import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import javax.annotation.Nonnull;
 
 public class UIManager {
 
-	private static int windowId;
-
-	public static void openUIPassively(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
-
+	public static void openUIPassively(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
+		Task.builder()
+				.execute(() -> openUIForcefully(player, page))
+				.delay(1)
+				.build();
 	}
 
-	public static void openUIForcefully(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
-		player.closeContainer();
-
-		windowId = windowId % 100 + 1;
-		GooeyContainer container = new GooeyContainer(player, page, windowId);
-		player.openContainer = container;
-		player.currentWindowId = windowId;
-		for(int i = 0; i < container.inventorySlots.size(); i++) {
-			player.connection.sendPacket(new SPacketWindowProperty(container.windowId, i, 0));
+	public static void openUIForcefully(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
+		if(player.openContainer instanceof GooeyContainer) {
+			((GooeyContainer) player.openContainer).setPage(page);
+			return;
 		}
 
-		SPacketOpenWindow openWindow = new SPacketOpenWindow(
-				player.currentWindowId,
-				"minecraft:container",
-				new TextComponentString(page.getTitle()),
-				page.getTemplate().getRows() * 9
-		);
-		player.connection.sendPacket(openWindow);
-		container.detectAndSendChanges();
-		player.sendAllContents(container, container.inventoryItemStacks);
+		GooeyContainer container = new GooeyContainer(player, page);
+		container.open();
 	}
 
 	public static void closeUI(@Nonnull EntityPlayerMP player) {
+		int windowId = player.openContainer == null ? 0 : player.openContainer.windowId;
 
+		CPacketCloseWindow pclient = new CPacketCloseWindow();
+		ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, windowId, 0);
+		SPacketCloseWindow pserver = new SPacketCloseWindow(windowId);
+
+		player.connection.processCloseWindow(pclient);
+		player.connection.sendPacket(pserver);
 	}
 
 }
