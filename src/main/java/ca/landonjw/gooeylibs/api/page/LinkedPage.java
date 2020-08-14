@@ -4,7 +4,6 @@ import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.button.IButton;
 import ca.landonjw.gooeylibs.api.button.LinkedPageButton;
 import ca.landonjw.gooeylibs.api.button.PlaceholderButton;
-import ca.landonjw.gooeylibs.api.template.ITemplate;
 import ca.landonjw.gooeylibs.api.template.Template;
 import com.google.common.collect.Lists;
 
@@ -33,6 +32,7 @@ public class LinkedPage extends Page {
 				((LinkedPageButton) button).setPage(this);
 			}
 		}
+		getTemplate().loadButtonDisplays();
 	}
 
 	public int getPageNumber() {
@@ -85,7 +85,6 @@ public class LinkedPage extends Page {
 		return new LinkedPageBuilder(this);
 	}
 
-	@Override
 	public LinkedPage clone() {
 		return new LinkedPageBuilder(this).build();
 	}
@@ -123,8 +122,8 @@ public class LinkedPage extends Page {
 			return this;
 		}
 
-		public LinkedPageBuilder template(@Nonnull ITemplate template) {
-			super.template(template.clone());
+		public LinkedPageBuilder template(@Nonnull Template template) {
+			super.template(template);
 			return this;
 		}
 
@@ -162,7 +161,7 @@ public class LinkedPage extends Page {
 			nextPage = null;
 
 			List<LinkedPage> generatedPages = Lists.newArrayList();
-			ITemplate originalTemplate = this.template;
+			Template originalTemplate = this.template;
 
 			Iterator<Button> replacementIter = replacements.iterator();
 			while(replacementIter.hasNext()) {
@@ -178,10 +177,13 @@ public class LinkedPage extends Page {
 				generatedPages.add(page);
 			}
 
+			for(LinkedPage page : generatedPages) {
+				page.getTemplate().loadButtonDisplays();
+			}
 			return generatedPages.get(0);
 		}
 
-		private ITemplate replacePlaceholdersInTemplate(Iterator<Button> replacementIter, ITemplate originalTemplate) {
+		private Template replacePlaceholdersInTemplate(Iterator<Button> replacementIter, Template originalTemplate) {
 			Template.TemplateBuilder templateBuilder = new Template.TemplateBuilder(originalTemplate);
 			for(int i = 0; i < template.getSlots(); i++) {
 				if(!replacementIter.hasNext()) break;

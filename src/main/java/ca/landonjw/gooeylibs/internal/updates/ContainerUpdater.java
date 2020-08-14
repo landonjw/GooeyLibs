@@ -25,7 +25,7 @@ public class ContainerUpdater {
 	public static void unregister(IPage page, GooeyContainer container) {
 		if(!pageObservers.containsKey(page)) return;
 
-		pageObservers.get(page).remove(page);
+		pageObservers.get(page).remove(container);
 		if(pageObservers.get(page).isEmpty()) {
 			pageObservers.remove(page);
 		}

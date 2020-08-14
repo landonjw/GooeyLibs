@@ -13,8 +13,6 @@ public interface IPage {
 
 	void onClose(PageAction action);
 
-	IPage clone();
-
 	default void update() {
 		ContainerUpdater.update(this);
 	}

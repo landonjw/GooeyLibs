@@ -1,6 +1,7 @@
 package ca.landonjw.gooeylibs.api.template;
 
 import ca.landonjw.gooeylibs.api.button.IButton;
+import ca.landonjw.gooeylibs.api.button.LinkedPageButton;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
@@ -15,13 +16,23 @@ import java.util.stream.Collectors;
 
 public class Template implements ITemplate {
 
-	private static final int NUM_COLUMNS = 9;
-
 	private List<IButton> buttons;
+	private NonNullList<ItemStack> buttonDisplays = NonNullList.create();
 
 	protected Template(@Nonnull TemplateBuilder builder) {
 		if(builder.buttons == null) throw new IllegalArgumentException("template button grid must not be null");
 		this.buttons = builder.buttons;
+	}
+
+	/**
+	 * Used for internal purposes to allow lazy loading on linked page placeholders.
+	 * Should be not be used otherwise.
+	 */
+	public void loadButtonDisplays() {
+		buttonDisplays.clear();
+		buttons.stream()
+				.map((button) -> (button != null) ? button.getDisplay() : ItemStack.EMPTY)
+				.collect(Collectors.toCollection(() -> buttonDisplays));
 	}
 
 	@Override
@@ -41,12 +52,9 @@ public class Template implements ITemplate {
 
 	@Override
 	public NonNullList<ItemStack> toContainerDisplay() {
-		return buttons.stream()
-				.map((button) -> (button != null) ? button.getDisplay() : ItemStack.EMPTY)
-				.collect(Collectors.toCollection(NonNullList::create));
+		return buttonDisplays;
 	}
 
-	@Override
 	public Template clone() {
 		return new TemplateBuilder(this).build();
 	}
@@ -61,6 +69,7 @@ public class Template implements ITemplate {
 
 	public static class TemplateBuilder {
 
+		private final int NUM_COLUMNS = 9;
 		private List<IButton> buttons;
 		private int rows;
 
@@ -77,9 +86,15 @@ public class Template implements ITemplate {
 			this.rows = template.getSlots() / 9;
 
 			this.buttons = Lists.newArrayList();
+
+
 			for(int i = 0; i < template.getSlots(); i++) {
 				if(template.getButton(i).isPresent()) {
-					this.buttons.add(template.getButton(i).get().clone());
+					IButton button = template.getButton(i).get();
+					if(button instanceof LinkedPageButton) {
+						button = ((LinkedPageButton) button).clone();
+					}
+					this.buttons.add(button);
 				}
 				else {
 					this.buttons.add(null);
@@ -98,6 +113,7 @@ public class Template implements ITemplate {
 		public TemplateBuilder set(int row, int col, @Nullable IButton button) {
 			if(row < 0 || row > rows) return this;
 			if(col < 0 || col > NUM_COLUMNS) return this;
+			if(button instanceof LinkedPageButton) button = ((LinkedPageButton) button).clone();
 
 			buttons.set(row * 9 + col, button);
 			return this;
@@ -225,6 +241,7 @@ public class Template implements ITemplate {
 
 	public static class MultiButtonFiller {
 
+		private final int NUM_COLUMNS = 9;
 		private TemplateBuilder templateBuilder;
 
 		protected MultiButtonFiller(@Nonnull TemplateBuilder builder) {
