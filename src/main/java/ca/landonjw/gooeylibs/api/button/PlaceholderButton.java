@@ -38,10 +38,10 @@ public class PlaceholderButton extends Button {
 
 		private String identifier = "default";
 
-		public PlaceholderButtonBuilder() {
+		protected PlaceholderButtonBuilder() {
 		}
 
-		public PlaceholderButtonBuilder(PlaceholderButton button) {
+		protected PlaceholderButtonBuilder(PlaceholderButton button) {
 			super(button);
 			this.identifier = button.identifier;
 		}

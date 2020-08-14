@@ -18,14 +18,10 @@ public class Template implements ITemplate {
 	private static final int NUM_COLUMNS = 9;
 
 	private List<IButton> buttons;
-	private NonNullList<ItemStack> buttonDisplays = NonNullList.create();
 
 	protected Template(@Nonnull TemplateBuilder builder) {
 		if(builder.buttons == null) throw new IllegalArgumentException("template button grid must not be null");
 		this.buttons = builder.buttons;
-		buttons.stream()
-				.map((button) -> (button != null) ? button.getDisplay() : ItemStack.EMPTY)
-				.collect(Collectors.toCollection(() -> buttonDisplays));
 	}
 
 	@Override
@@ -45,9 +41,12 @@ public class Template implements ITemplate {
 
 	@Override
 	public NonNullList<ItemStack> toContainerDisplay() {
-		return buttonDisplays;
+		return buttons.stream()
+				.map((button) -> (button != null) ? button.getDisplay() : ItemStack.EMPTY)
+				.collect(Collectors.toCollection(NonNullList::create));
 	}
 
+	@Override
 	public Template clone() {
 		return new TemplateBuilder(this).build();
 	}
@@ -65,7 +64,7 @@ public class Template implements ITemplate {
 		private List<IButton> buttons;
 		private int rows;
 
-		public TemplateBuilder(int rows) {
+		protected TemplateBuilder(int rows) {
 			if(rows < 1) throw new IllegalArgumentException("rows must be greater than 0");
 			this.rows = rows;
 			this.buttons = new ArrayList<>();
@@ -74,9 +73,18 @@ public class Template implements ITemplate {
 			}
 		}
 
-		public TemplateBuilder(Template template) {
+		public TemplateBuilder(ITemplate template) {
 			this.rows = template.getSlots() / 9;
-			this.buttons = Lists.newArrayList(template.buttons);
+
+			this.buttons = Lists.newArrayList();
+			for(int i = 0; i < template.getSlots(); i++) {
+				if(template.getButton(i).isPresent()) {
+					this.buttons.add(template.getButton(i).get().clone());
+				}
+				else {
+					this.buttons.add(null);
+				}
+			}
 		}
 
 		protected IButton get(int row, int col) {
@@ -219,7 +227,7 @@ public class Template implements ITemplate {
 
 		private TemplateBuilder templateBuilder;
 
-		private MultiButtonFiller(@Nonnull TemplateBuilder builder) {
+		protected MultiButtonFiller(@Nonnull TemplateBuilder builder) {
 			this.templateBuilder = builder;
 		}
 

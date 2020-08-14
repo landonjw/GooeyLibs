@@ -3,6 +3,7 @@ package ca.landonjw.gooeylibs.internal.inventory;
 import ca.landonjw.gooeylibs.api.button.ButtonAction;
 import ca.landonjw.gooeylibs.api.page.IPage;
 import ca.landonjw.gooeylibs.api.page.PageAction;
+import ca.landonjw.gooeylibs.internal.updates.ContainerUpdater;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
@@ -35,6 +36,7 @@ public class GooeyContainer extends Container {
 		this.windowId = 1;
 
 		this.page = page;
+		ContainerUpdater.register(page, this);
 
 		this.title = page.getTitle();
 		this.slotsDisplayed = page.getTemplate().getSlots();
@@ -94,9 +96,11 @@ public class GooeyContainer extends Container {
 			render();
 		}
 		else {
+			ContainerUpdater.unregister(this.page, this);
 			this.page = page;
 			render();
 			page.onOpen(new PageAction(player, page));
+			ContainerUpdater.register(page, this);
 		}
 	}
 
@@ -132,10 +136,8 @@ public class GooeyContainer extends Container {
 		if(closing) return;
 
 		closing = true;
-
-		System.out.println("Invoking close action");
-		PageAction action = new PageAction(player, page);
-		page.onClose(action);
+		page.onClose(new PageAction(player, page));
+		ContainerUpdater.unregister(page, this);
 	}
 
 }

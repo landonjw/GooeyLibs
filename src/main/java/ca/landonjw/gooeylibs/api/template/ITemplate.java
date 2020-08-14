@@ -16,4 +16,6 @@ public interface ITemplate {
 
 	NonNullList<ItemStack> toContainerDisplay();
 
+	ITemplate clone();
+
 }

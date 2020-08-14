@@ -1,6 +1,5 @@
 package ca.landonjw.gooeylibs.api.page;
 
-import ca.landonjw.gooeylibs.api.button.IButton;
 import ca.landonjw.gooeylibs.api.template.ITemplate;
 
 import javax.annotation.Nonnull;
@@ -40,6 +39,15 @@ public class Page implements IPage {
 		if(closeBehaviour != null) closeBehaviour.accept(action);
 	}
 
+	public PageBuilder toBuilder() {
+		return new PageBuilder(this);
+	}
+
+	@Override
+	public Page clone() {
+		return new PageBuilder(this).build();
+	}
+
 	public static PageBuilder builder() {
 		return new PageBuilder();
 	}
@@ -47,14 +55,14 @@ public class Page implements IPage {
 	public static class PageBuilder {
 
 		private String title = "";
-		private ITemplate template;
+		protected ITemplate template;
 		private Consumer<PageAction> openBehaviour, closeBehaviour;
 
-		public PageBuilder() {
+		protected PageBuilder() {
 
 		}
 
-		public PageBuilder(Page page) {
+		protected PageBuilder(Page page) {
 			this.title = page.getTitle();
 			this.template = page.getTemplate();
 			this.openBehaviour = page.openBehaviour;
@@ -68,11 +76,6 @@ public class Page implements IPage {
 
 		public PageBuilder template(@Nonnull ITemplate template) {
 			this.template = template;
-			return this;
-		}
-
-		public PageBuilder replacePlaceholders(@Nonnull Iterable<IButton> buttons) {
-			//TODO
 			return this;
 		}
 
@@ -104,13 +107,13 @@ public class Page implements IPage {
 			return this;
 		}
 
-		protected void validateBuild() {
-			if(template == null) throw new IllegalStateException("page template must be defined");
-		}
-
 		public Page build() {
 			validateBuild();
 			return new Page(this);
+		}
+
+		protected void validateBuild() {
+			if(template == null) throw new IllegalStateException("page template must be defined");
 		}
 
 	}

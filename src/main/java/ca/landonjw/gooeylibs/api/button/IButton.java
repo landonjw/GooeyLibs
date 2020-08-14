@@ -8,4 +8,6 @@ public interface IButton {
 
 	void onClick(ButtonAction action);
 
+	IButton clone();
+
 }

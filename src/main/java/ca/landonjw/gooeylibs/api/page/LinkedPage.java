@@ -1,14 +1,24 @@
 package ca.landonjw.gooeylibs.api.page;
 
+import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.button.IButton;
+import ca.landonjw.gooeylibs.api.button.LinkedPageButton;
+import ca.landonjw.gooeylibs.api.button.PlaceholderButton;
 import ca.landonjw.gooeylibs.api.template.ITemplate;
+import ca.landonjw.gooeylibs.api.template.Template;
+import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
 public class LinkedPage extends Page {
+
+	public static final String PAGE_NUMBER_PLACEHOLDER = "{page-number}";
+	public static final String TOTAL_PAGES_PLACEHOLDER = "{total-pages}";
 
 	private LinkedPage previousPage, nextPage;
 
@@ -16,6 +26,13 @@ public class LinkedPage extends Page {
 		super(builder);
 		this.previousPage = builder.previousPage;
 		this.nextPage = builder.nextPage;
+
+		for(int i = 0; i < getTemplate().getSlots(); i++) {
+			IButton button = getTemplate().getButton(i).orElse(null);
+			if(button instanceof LinkedPageButton) {
+				((LinkedPageButton) button).setPage(this);
+			}
+		}
 	}
 
 	public int getPageNumber() {
@@ -56,16 +73,39 @@ public class LinkedPage extends Page {
 		return Optional.of(page);
 	}
 
+	@Override
+	public String getTitle() {
+		return super.getTitle()
+				.replace(PAGE_NUMBER_PLACEHOLDER, getPageNumber() + "")
+				.replace(TOTAL_PAGES_PLACEHOLDER, getTotalPages() + "");
+	}
+
+	@Override
+	public LinkedPageBuilder toBuilder() {
+		return new LinkedPageBuilder(this);
+	}
+
+	@Override
+	public LinkedPage clone() {
+		return new LinkedPageBuilder(this).build();
+	}
+
+	public static LinkedPageBuilder builder() {
+		return new LinkedPageBuilder();
+	}
+
 	public static class LinkedPageBuilder extends Page.PageBuilder {
 
 		private LinkedPage previousPage, nextPage;
 
-		public LinkedPageBuilder() {
+		protected LinkedPageBuilder() {
 
 		}
 
-		public LinkedPageBuilder(LinkedPage page) {
+		protected LinkedPageBuilder(LinkedPage page) {
 			super(page);
+			this.previousPage = page.previousPage;
+			this.nextPage = page.nextPage;
 		}
 
 		public LinkedPageBuilder previousPage(@Nullable LinkedPage previousPage) {
@@ -84,12 +124,7 @@ public class LinkedPage extends Page {
 		}
 
 		public LinkedPageBuilder template(@Nonnull ITemplate template) {
-			super.template(template);
-			return this;
-		}
-
-		public LinkedPageBuilder replacePlaceholders(@Nonnull Iterable<IButton> buttons) {
-			//TODO
+			super.template(template.clone());
 			return this;
 		}
 
@@ -118,6 +153,47 @@ public class LinkedPage extends Page {
 			this.previousPage = null;
 			this.nextPage = null;
 			return this;
+		}
+
+		public LinkedPage replacePlaceholders(@Nonnull Iterable<Button> replacements) {
+			validateBuild();
+
+			previousPage = null;
+			nextPage = null;
+
+			List<LinkedPage> generatedPages = Lists.newArrayList();
+			ITemplate originalTemplate = this.template;
+
+			Iterator<Button> replacementIter = replacements.iterator();
+			while(replacementIter.hasNext()) {
+
+				this.template = replacePlaceholdersInTemplate(replacementIter, originalTemplate);
+				LinkedPage page = new LinkedPage(this);
+
+				if(!generatedPages.isEmpty()) {
+					LinkedPage previousPage = generatedPages.get(generatedPages.size() - 1);
+					page.setPreviousPage(previousPage);
+					previousPage.setNextPage(page);
+				}
+				generatedPages.add(page);
+			}
+
+			return generatedPages.get(0);
+		}
+
+		private ITemplate replacePlaceholdersInTemplate(Iterator<Button> replacementIter, ITemplate originalTemplate) {
+			Template.TemplateBuilder templateBuilder = new Template.TemplateBuilder(originalTemplate);
+			for(int i = 0; i < template.getSlots(); i++) {
+				if(!replacementIter.hasNext()) break;
+
+				int buttonSlot = i;
+				originalTemplate.getButton(i).ifPresent((button) -> {
+					if(button instanceof PlaceholderButton) {
+						templateBuilder.set(buttonSlot, replacementIter.next());
+					}
+				});
+			}
+			return templateBuilder.build();
 		}
 
 		public LinkedPage build() {

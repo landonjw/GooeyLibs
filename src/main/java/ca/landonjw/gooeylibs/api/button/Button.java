@@ -31,6 +31,7 @@ public class Button implements IButton {
 		if(clickBehaviour != null) clickBehaviour.accept(action);
 	}
 
+	@Override
 	public Button clone() {
 		return new ButtonBuilder(this).build();
 	}
@@ -50,16 +51,16 @@ public class Button implements IButton {
 		private List<String> lore = Lists.newArrayList();
 		private Consumer<ButtonAction> clickBehaviour;
 
-		public ButtonBuilder() {
+		protected ButtonBuilder() {
 		}
 
-		public ButtonBuilder(Button button) {
+		protected ButtonBuilder(Button button) {
 			this.display = button.getDisplay().copy();
 			this.name = button.getDisplay().getDisplayName();
 			this.clickBehaviour = button.clickBehaviour;
 		}
 
-		public ButtonBuilder item(ItemStack display) {
+		public ButtonBuilder item(@Nonnull ItemStack display) {
 			this.display = display;
 			return this;
 		}
