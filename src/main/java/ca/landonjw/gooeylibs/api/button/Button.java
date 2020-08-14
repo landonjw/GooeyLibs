@@ -31,7 +31,6 @@ public class Button implements IButton {
 		if(clickBehaviour != null) clickBehaviour.accept(action);
 	}
 
-	@Override
 	public Button clone() {
 		return new ButtonBuilder(this).build();
 	}

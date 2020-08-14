@@ -17,6 +17,7 @@ public class Page implements IPage {
 		this.title = builder.title;
 		this.openBehaviour = builder.openBehaviour;
 		this.closeBehaviour = builder.closeBehaviour;
+		template.loadButtonDisplays();
 	}
 
 	@Override
