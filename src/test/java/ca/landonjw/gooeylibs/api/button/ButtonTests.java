@@ -15,11 +15,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-class ButtonTest {
+class ButtonTests {
 
 	private ItemStack stack;
 
-	private ButtonTest() {
+	private ButtonTests() {
 		Bootstrap.register();
 		stack = new ItemStack(Items.DIAMOND);
 	}

@@ -5,6 +5,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class ButtonAction {
 
@@ -17,10 +18,10 @@ public class ButtonAction {
 	                    @Nonnull ClickType clickType,
 	                    @Nonnull IButton button,
 	                    @Nonnull IPage page) {
-		this.player = player;
-		this.clickType = clickType;
-		this.button = button;
-		this.page = page;
+		this.player = Objects.requireNonNull(player);
+		this.clickType = Objects.requireNonNull(clickType);
+		this.button = Objects.requireNonNull(button);
+		this.page = Objects.requireNonNull(page);
 	}
 
 	public EntityPlayerMP getPlayer() {
