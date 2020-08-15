@@ -23,6 +23,10 @@ public class LinkedPageButton extends Button {
 		this.page = page;
 	}
 
+	public LinkedPage getPage() {
+		return page;
+	}
+
 	@Override
 	public ItemStack getDisplay() {
 		ItemStack display = super.getDisplay();

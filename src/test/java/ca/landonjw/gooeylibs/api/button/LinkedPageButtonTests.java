@@ -17,18 +17,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
-class ButtonTests {
+class LinkedPageButtonTests {
 
 	private ItemStack stack;
 
-	private ButtonTests() {
+	private LinkedPageButtonTests() {
 		Bootstrap.register();
 		stack = new ItemStack(Items.DIAMOND);
 	}
 
 	@Test
 	void buttonReturnsGivenItemStack() {
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.build();
 
@@ -38,7 +38,7 @@ class ButtonTests {
 	@Test
 	void throwsExceptionWhenGivenNullItemStack() {
 		assertThrows(IllegalStateException.class, () -> {
-			Button.builder()
+			LinkedPageButton.builder()
 					.item(null)
 					.build();
 		});
@@ -48,7 +48,7 @@ class ButtonTests {
 	void buttonReturnsGivenName() {
 		String expectedName = "Hello";
 
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.name(expectedName)
 				.build();
@@ -60,7 +60,7 @@ class ButtonTests {
 	void buttonReturnsEmptyStringWhenGivenNull() {
 		String expectedName = "";
 
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.name(null)
 				.build();
@@ -72,7 +72,7 @@ class ButtonTests {
 	void buttonReturnsDefaultNameWhenNotSet() {
 		String expectedName = stack.getDisplayName();
 
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.build();
 
@@ -83,7 +83,7 @@ class ButtonTests {
 	void buttonReturnsGivenLore() {
 		List<String> expectedLore = Lists.newArrayList("1", "2", "3");
 
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.lore(expectedLore)
 				.build();
@@ -100,7 +100,7 @@ class ButtonTests {
 
 	@Test
 	void buttonReturnsNoLoreWhenGivenNullLore() {
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.lore(null)
 				.build();
@@ -115,7 +115,7 @@ class ButtonTests {
 		int expectedValue = 1;
 		AtomicInteger foo = new AtomicInteger();
 
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.onClick(() -> foo.set(expectedValue))
 				.build();
@@ -133,7 +133,7 @@ class ButtonTests {
 		EntityPlayerMP[] finalPlayer = new EntityPlayerMP[1];
 		EntityPlayerMP player = mock(EntityPlayerMP.class);
 
-		Button button = Button.builder()
+		LinkedPageButton button = LinkedPageButton.builder()
 				.item(stack)
 				.onClick((action) -> finalPlayer[0] = action.getPlayer())
 				.build();

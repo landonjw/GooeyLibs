@@ -1,6 +1,6 @@
 package ca.landonjw.gooeylibs.api.page;
 
-import ca.landonjw.gooeylibs.api.template.Template;
+import ca.landonjw.gooeylibs.api.template.ITemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -8,7 +8,7 @@ import java.util.function.Consumer;
 
 public class Page implements IPage {
 
-	private Template template;
+	private ITemplate template;
 	private String title;
 	private Consumer<PageAction> openBehaviour, closeBehaviour;
 
@@ -17,11 +17,10 @@ public class Page implements IPage {
 		this.title = builder.title;
 		this.openBehaviour = builder.openBehaviour;
 		this.closeBehaviour = builder.closeBehaviour;
-		template.loadButtonDisplays();
 	}
 
 	@Override
-	public Template getTemplate() {
+	public ITemplate getTemplate() {
 		return template;
 	}
 
@@ -55,7 +54,7 @@ public class Page implements IPage {
 	public static class PageBuilder {
 
 		private String title = "";
-		protected Template template;
+		protected ITemplate template;
 		private Consumer<PageAction> openBehaviour, closeBehaviour;
 
 		protected PageBuilder() {
@@ -74,7 +73,7 @@ public class Page implements IPage {
 			return this;
 		}
 
-		public PageBuilder template(@Nonnull Template template) {
+		public PageBuilder template(@Nonnull ITemplate template) {
 			this.template = template;
 			return this;
 		}

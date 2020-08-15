@@ -4,7 +4,8 @@ import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.button.IButton;
 import ca.landonjw.gooeylibs.api.button.LinkedPageButton;
 import ca.landonjw.gooeylibs.api.button.PlaceholderButton;
-import ca.landonjw.gooeylibs.api.template.Template;
+import ca.landonjw.gooeylibs.api.template.ChestTemplate;
+import ca.landonjw.gooeylibs.api.template.ITemplate;
 import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
@@ -25,14 +26,18 @@ public class LinkedPage extends Page {
 		super(builder);
 		this.previousPage = builder.previousPage;
 		this.nextPage = builder.nextPage;
+		initLinkedButtons();
+	}
 
+	private void initLinkedButtons() {
 		for(int i = 0; i < getTemplate().getSlots(); i++) {
 			IButton button = getTemplate().getButton(i).orElse(null);
 			if(button instanceof LinkedPageButton) {
-				((LinkedPageButton) button).setPage(this);
+				LinkedPageButton clone = ((LinkedPageButton) button).clone();
+				clone.setPage(this);
+				getTemplate().setButton(i, clone);
 			}
 		}
-		getTemplate().loadButtonDisplays();
 	}
 
 	public int getPageNumber() {
@@ -49,6 +54,7 @@ public class LinkedPage extends Page {
 
 	public void setPreviousPage(@Nullable LinkedPage page) {
 		this.previousPage = page;
+		initLinkedButtons();
 	}
 
 	public Optional<LinkedPage> getNextPage() {
@@ -57,6 +63,7 @@ public class LinkedPage extends Page {
 
 	public void setNextPage(@Nullable LinkedPage page) {
 		this.nextPage = page;
+		initLinkedButtons();
 	}
 
 	public Optional<LinkedPage> getPage(int pageNumber) {
@@ -122,7 +129,7 @@ public class LinkedPage extends Page {
 			return this;
 		}
 
-		public LinkedPageBuilder template(@Nonnull Template template) {
+		public LinkedPageBuilder template(@Nonnull ChestTemplate template) {
 			super.template(template);
 			return this;
 		}
@@ -161,7 +168,7 @@ public class LinkedPage extends Page {
 			nextPage = null;
 
 			List<LinkedPage> generatedPages = Lists.newArrayList();
-			Template originalTemplate = this.template;
+			ChestTemplate originalTemplate = (ChestTemplate) this.template;
 
 			Iterator<Button> replacementIter = replacements.iterator();
 			while(replacementIter.hasNext()) {
@@ -176,15 +183,11 @@ public class LinkedPage extends Page {
 				}
 				generatedPages.add(page);
 			}
-
-			for(LinkedPage page : generatedPages) {
-				page.getTemplate().loadButtonDisplays();
-			}
 			return generatedPages.get(0);
 		}
 
-		private Template replacePlaceholdersInTemplate(Iterator<Button> replacementIter, Template originalTemplate) {
-			Template.TemplateBuilder templateBuilder = new Template.TemplateBuilder(originalTemplate);
+		private ITemplate replacePlaceholdersInTemplate(Iterator<Button> replacementIter, ChestTemplate originalTemplate) {
+			ChestTemplate.ChestTemplateBuilder templateBuilder = new ChestTemplate.ChestTemplateBuilder(originalTemplate);
 			for(int i = 0; i < template.getSlots(); i++) {
 				if(!replacementIter.hasNext()) break;
 

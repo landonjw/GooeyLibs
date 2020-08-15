@@ -14,22 +14,14 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-public class Template implements ITemplate {
+public class ChestTemplate implements ITemplate {
 
 	private List<IButton> buttons;
 	private NonNullList<ItemStack> buttonDisplays = NonNullList.create();
 
-	protected Template(@Nonnull TemplateBuilder builder) {
+	protected ChestTemplate(@Nonnull ChestTemplateBuilder builder) {
 		if(builder.buttons == null) throw new IllegalArgumentException("template button grid must not be null");
 		this.buttons = builder.buttons;
-	}
-
-	/**
-	 * Used for internal purposes to allow lazy loading on linked page placeholders.
-	 * Should be not be used otherwise.
-	 */
-	public void loadButtonDisplays() {
-		buttonDisplays.clear();
 		buttons.stream()
 				.map((button) -> (button != null) ? button.getDisplay() : ItemStack.EMPTY)
 				.collect(Collectors.toCollection(() -> buttonDisplays));
@@ -50,30 +42,39 @@ public class Template implements ITemplate {
 		return Optional.ofNullable(buttons.get(index));
 	}
 
+	public void setButton(int row, int col, @Nullable IButton button) {
+		setButton(row * 9 + col, button);
+	}
+
+	public void setButton(int index, @Nullable IButton button) {
+		buttons.set(index, button);
+		buttonDisplays.set(index, (button != null) ? button.getDisplay() : ItemStack.EMPTY);
+	}
+
 	@Override
 	public NonNullList<ItemStack> toContainerDisplay() {
 		return buttonDisplays;
 	}
 
-	public Template clone() {
-		return new TemplateBuilder(this).build();
+	public ChestTemplate clone() {
+		return new ChestTemplateBuilder(this).build();
 	}
 
-	public TemplateBuilder toBuilder() {
-		return new TemplateBuilder(this);
+	public ChestTemplateBuilder toBuilder() {
+		return new ChestTemplateBuilder(this);
 	}
 
-	public static TemplateBuilder builder(int rows) {
-		return new TemplateBuilder(rows);
+	public static ChestTemplateBuilder builder(int rows) {
+		return new ChestTemplateBuilder(rows);
 	}
 
-	public static class TemplateBuilder {
+	public static class ChestTemplateBuilder {
 
 		private final int NUM_COLUMNS = 9;
 		private List<IButton> buttons;
 		private int rows;
 
-		protected TemplateBuilder(int rows) {
+		protected ChestTemplateBuilder(int rows) {
 			if(rows < 1) throw new IllegalArgumentException("rows must be greater than 0");
 			this.rows = rows;
 			this.buttons = new ArrayList<>();
@@ -82,7 +83,7 @@ public class Template implements ITemplate {
 			}
 		}
 
-		public TemplateBuilder(ITemplate template) {
+		public ChestTemplateBuilder(ChestTemplate template) {
 			this.rows = template.getSlots() / 9;
 
 			this.buttons = Lists.newArrayList();
@@ -91,9 +92,6 @@ public class Template implements ITemplate {
 			for(int i = 0; i < template.getSlots(); i++) {
 				if(template.getButton(i).isPresent()) {
 					IButton button = template.getButton(i).get();
-					if(button instanceof LinkedPageButton) {
-						button = ((LinkedPageButton) button).clone();
-					}
 					this.buttons.add(button);
 				}
 				else {
@@ -110,7 +108,7 @@ public class Template implements ITemplate {
 			return buttons.get(index);
 		}
 
-		public TemplateBuilder set(int row, int col, @Nullable IButton button) {
+		public ChestTemplateBuilder set(int row, int col, @Nullable IButton button) {
 			if(row < 0 || row > rows) return this;
 			if(col < 0 || col > NUM_COLUMNS) return this;
 			if(button instanceof LinkedPageButton) button = ((LinkedPageButton) button).clone();
@@ -119,11 +117,11 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder set(int slot, IButton button) {
+		public ChestTemplateBuilder set(int slot, IButton button) {
 			return set(slot / 9, slot % 9, button);
 		}
 
-		public TemplateBuilder row(int row, @Nullable IButton button) {
+		public ChestTemplateBuilder row(int row, @Nullable IButton button) {
 			if(row < 0 || row > rows) return this;
 
 			for(int col = 0; col < NUM_COLUMNS; col++) {
@@ -132,7 +130,7 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder column(int col, @Nullable IButton button) {
+		public ChestTemplateBuilder column(int col, @Nullable IButton button) {
 			if(col < 0 || col > NUM_COLUMNS) return this;
 
 			for(int row = 0; row < rows; row++) {
@@ -141,7 +139,7 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder line(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nullable IButton button) {
+		public ChestTemplateBuilder line(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nullable IButton button) {
 			if(lineType == LineType.HORIZONTAL) {
 				if(startRow < 0 || startRow > rows) return this;
 
@@ -162,15 +160,15 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder square(int startRow, int startCol, int size, @Nullable IButton button) {
+		public ChestTemplateBuilder square(int startRow, int startCol, int size, @Nullable IButton button) {
 			return rectangle(startRow, startCol, size, size, button);
 		}
 
-		public TemplateBuilder rectangle(int startRow, int startCol, int length, int width, @Nullable IButton button) {
-			startRow = Math.min(0, startRow);
-			startCol = Math.min(0, startCol);
-			int endRow = Math.max(rows, startRow + length);
-			int endCol = Math.max(NUM_COLUMNS, startCol + width);
+		public ChestTemplateBuilder rectangle(int startRow, int startCol, int length, int width, @Nullable IButton button) {
+			startRow = Math.max(0, startRow);
+			startCol = Math.max(0, startCol);
+			int endRow = Math.min(rows - 1, startRow + length);
+			int endCol = Math.min(NUM_COLUMNS - 1, startCol + width);
 
 			for(int row = startRow; row < endRow; row++) {
 				for(int col = startCol; col < endCol; col++) {
@@ -180,11 +178,11 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder border(int startRow, int startCol, int length, int width, @Nullable IButton button) {
-			startRow = Math.min(0, startRow);
-			startCol = Math.min(0, startCol);
-			int endRow = Math.max(rows, startRow + length);
-			int endCol = Math.max(NUM_COLUMNS, startCol + width);
+		public ChestTemplateBuilder border(int startRow, int startCol, int length, int width, @Nullable IButton button) {
+			startRow = Math.max(0, startRow);
+			startCol = Math.max(0, startCol);
+			int endRow = Math.min(rows - 1, startRow + length);
+			int endCol = Math.min(NUM_COLUMNS - 1, startCol + width);
 
 			for(int row = startRow; row < endRow; row++) {
 				set(row, startCol, button);
@@ -197,11 +195,11 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder checker(int startRow, int startCol, int length, int width, @Nullable IButton button) {
+		public ChestTemplateBuilder checker(int startRow, int startCol, int length, int width, @Nullable IButton button) {
 			startRow = Math.max(0, startRow);
 			startCol = Math.max(0, startCol);
-			int endRow = Math.min(rows, startRow + length);
-			int endCol = Math.min(NUM_COLUMNS, startCol + width);
+			int endRow = Math.min(rows - 1, startRow + length);
+			int endCol = Math.min(NUM_COLUMNS - 1, startCol + width);
 
 			for(int row = startRow; row < endRow; row++) {
 				for(int col = startCol; col < endCol; col++) {
@@ -213,7 +211,7 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder fill(@Nullable IButton button) {
+		public ChestTemplateBuilder fill(@Nullable IButton button) {
 			for(int row = 0; row < rows; row++) {
 				for(int col = 0; col < NUM_COLUMNS; col++) {
 					if(get(row, col) == null) {
@@ -228,13 +226,13 @@ public class Template implements ITemplate {
 			return new MultiButtonFiller(this);
 		}
 
-		public TemplateBuilder reset() {
+		public ChestTemplateBuilder reset() {
 			this.buttons = new ArrayList<>(rows * 9);
 			return this;
 		}
 
-		public Template build() {
-			return new Template(this);
+		public ChestTemplate build() {
+			return new ChestTemplate(this);
 		}
 
 	}
@@ -242,9 +240,9 @@ public class Template implements ITemplate {
 	public static class MultiButtonFiller {
 
 		private final int NUM_COLUMNS = 9;
-		private TemplateBuilder templateBuilder;
+		private ChestTemplateBuilder templateBuilder;
 
-		protected MultiButtonFiller(@Nonnull TemplateBuilder builder) {
+		protected MultiButtonFiller(@Nonnull ChestTemplateBuilder builder) {
 			this.templateBuilder = builder;
 		}
 
@@ -296,10 +294,10 @@ public class Template implements ITemplate {
 		}
 
 		public MultiButtonFiller rectangle(int startRow, int startCol, int length, int width, @Nonnull Iterable<IButton> buttons) {
-			startRow = Math.min(0, startRow);
-			startCol = Math.min(0, startCol);
-			int endRow = Math.max(templateBuilder.rows, startRow + length);
-			int endCol = Math.max(NUM_COLUMNS, startCol + width);
+			startRow = Math.max(0, startRow);
+			startCol = Math.max(0, startCol);
+			int endRow = Math.min(templateBuilder.rows - 1, startRow + length);
+			int endCol = Math.min(NUM_COLUMNS - 1, startCol + width);
 
 			Iterator<IButton> iter = buttons.iterator();
 			for(int row = startRow; row < endRow; row++) {
@@ -311,10 +309,10 @@ public class Template implements ITemplate {
 		}
 
 		public MultiButtonFiller border(int startRow, int startCol, int length, int width, @Nonnull Iterable<IButton> buttons) {
-			startRow = Math.min(0, startRow);
-			startCol = Math.min(0, startCol);
-			int endRow = Math.max(templateBuilder.rows - 1, startRow + length);
-			int endCol = Math.max(NUM_COLUMNS - 1, startCol + width);
+			startRow = Math.max(0, startRow);
+			startCol = Math.max(0, startCol);
+			int endRow = Math.min(templateBuilder.rows - 1, startRow + length);
+			int endCol = Math.min(NUM_COLUMNS - 1, startCol + width);
 
 			Iterator<IButton> iter = buttons.iterator();
 			for(int col = startCol; col <= endCol; col++) {
@@ -333,10 +331,10 @@ public class Template implements ITemplate {
 		}
 
 		public MultiButtonFiller checker(int startRow, int startCol, int length, int width, @Nonnull Iterable<IButton> buttons) {
-			startRow = Math.min(0, startRow);
-			startCol = Math.min(0, startCol);
-			int endRow = Math.max(templateBuilder.rows, startRow + length);
-			int endCol = Math.max(NUM_COLUMNS, startCol + width);
+			startRow = Math.max(0, startRow);
+			startCol = Math.max(0, startCol);
+			int endRow = Math.min(templateBuilder.rows - 1, startRow + length);
+			int endCol = Math.min(NUM_COLUMNS - 1, startCol + width);
 
 			Iterator<IButton> iter = buttons.iterator();
 			for(int row = startRow; row < endRow; row++) {
@@ -361,7 +359,7 @@ public class Template implements ITemplate {
 			return this;
 		}
 
-		public TemplateBuilder toTemplateBuilder() {
+		public ChestTemplateBuilder toTemplateBuilder() {
 			return templateBuilder;
 		}
 
