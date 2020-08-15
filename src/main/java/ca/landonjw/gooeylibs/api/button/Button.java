@@ -31,10 +31,6 @@ public class Button implements IButton {
 		if(clickBehaviour != null) clickBehaviour.accept(action);
 	}
 
-	public Button clone() {
-		return new ButtonBuilder(this).build();
-	}
-
 	public ButtonBuilder toBuilder() {
 		return new ButtonBuilder(this);
 	}
