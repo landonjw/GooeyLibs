@@ -1,8 +1,10 @@
 package ca.landonjw.gooeylibs.internal.inventory;
 
 import ca.landonjw.gooeylibs.api.button.ButtonAction;
+import ca.landonjw.gooeylibs.api.button.IButton;
 import ca.landonjw.gooeylibs.api.page.IPage;
 import ca.landonjw.gooeylibs.api.page.PageAction;
+import ca.landonjw.gooeylibs.internal.tasks.Task;
 import ca.landonjw.gooeylibs.internal.updates.ContainerUpdater;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,13 +15,21 @@ import net.minecraft.network.play.server.SPacketOpenWindow;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.Event;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
 
 public class GooeyContainer extends Container {
 
 	private static MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
+
+	//First 0-7 slots contain player's armor, hand slots, etc. So we offset for the inventory UI slots.
+	private final int PLAYER_INVENTORY_SLOT_OFFSET = 9;
 
 	private EntityPlayerMP player;
 
@@ -28,7 +38,7 @@ public class GooeyContainer extends Container {
 	private String title;
 	private int slotsDisplayed;
 
-	private long lastQuickMoveClickTick;
+	private long lastClickTick;
 	private boolean closing;
 
 	public GooeyContainer(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
@@ -40,6 +50,7 @@ public class GooeyContainer extends Container {
 
 		this.title = page.getTitle();
 		this.slotsDisplayed = page.getTemplate().getSlots();
+		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	public void open() {
@@ -55,31 +66,32 @@ public class GooeyContainer extends Container {
 		);
 		player.connection.sendPacket(openWindow);
 
-		player.sendAllContents(player.openContainer, page.getTemplate().toContainerDisplay());
-		player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+		updateAllContainerContents();
 		page.onOpen(new PageAction(player, page));
 	}
 
 	@Override
 	public ItemStack slotClick(int slot, int dragType, ClickType clickType, EntityPlayer playerSP) {
-		if(clickType == ClickType.PICKUP_ALL) return ItemStack.EMPTY;
-
-		// Updates both containers to prevent inventory desyncs
-		render();
-
-		if(clickType == ClickType.QUICK_MOVE) {
-			player.connection.sendPacket(new SPacketSetSlot(-1, slot, ItemStack.EMPTY));
-			// Used to prevent quick moves from propagating and invoking button calls.
-			// Allows for one quick move to be invoked each tick on the container.
-			if(lastQuickMoveClickTick == server.getTickCounter()) return ItemStack.EMPTY;
-			lastQuickMoveClickTick = server.getTickCounter();
+		if(clickType == ClickType.PICKUP) {
+			if(lastClickTick < server.getTickCounter() - 5) {
+				SPacketSetSlot setClickedSlot = new SPacketSetSlot(windowId, slot, getItemToSend(slot));
+				player.connection.sendPacket(setClickedSlot);
+			}
+			else {
+				updateAllContainerContents();
+			}
 		}
 		else if(clickType == ClickType.CLONE) {
-			player.connection.sendPacket(new SPacketSetSlot(-1, slot, ItemStack.EMPTY));
+			SPacketSetSlot setClickedSlot = new SPacketSetSlot(windowId, slot, getItemToSend(slot));
+			player.connection.sendPacket(setClickedSlot);
+		}
+		else if(clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL) {
+			if(lastClickTick == server.getTickCounter()) return ItemStack.EMPTY;
+			updateAllContainerContents();
 		}
 
-		//Invokes the button's behaviour if there is a valid button in the slot clicked.
-		if(slot >= page.getTemplate().getSlots() || slot < 0) return ItemStack.EMPTY;
+		clearPlayersCursor();
+		lastClickTick = server.getTickCounter();
 
 		page.getTemplate().getButton(slot).ifPresent((button) -> {
 			button.onClick(new ButtonAction(player, clickType, button, page));
@@ -122,12 +134,41 @@ public class GooeyContainer extends Container {
 		this.title = page.getTitle();
 		this.slotsDisplayed = page.getTemplate().getSlots();
 
+		updateAllContainerContents();
+	}
+
+	private void updateAllContainerContents() {
 		player.sendAllContents(player.openContainer, page.getTemplate().toContainerDisplay());
+
+		/*
+		 * Detects changes in the player's inventory and updates them. This is to prevent desyncs if a player
+		 * gets items added to their inventory while in the user interface.
+		 */
+		player.inventoryContainer.detectAndSendChanges();
 		player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
 	}
 
+	private void clearPlayersCursor() {
+		SPacketSetSlot setCursorSlot = new SPacketSetSlot(-1, 0, ItemStack.EMPTY);
+		player.connection.sendPacket(setCursorSlot);
+	}
+
+	private ItemStack getItemToSend(int slot) {
+		if(slot < 0) return ItemStack.EMPTY;
+
+		//Check if it's player's inventory or UI slot
+		if(slot >= page.getTemplate().getSlots()) {
+			int targetedPlayerSlotIndex = slot - page.getTemplate().getSlots() + PLAYER_INVENTORY_SLOT_OFFSET;
+			return player.inventoryContainer.getSlot(targetedPlayerSlotIndex).getStack();
+		}
+		else {
+			IButton button = page.getTemplate().getButton(slot).orElse(null);
+			return (button != null) ? button.getDisplay() : ItemStack.EMPTY;
+		}
+	}
+
 	@Override
-	public boolean canInteractWith(EntityPlayer playerSP) {
+	public boolean canInteractWith(EntityPlayer player) {
 		return true;
 	}
 
@@ -138,6 +179,18 @@ public class GooeyContainer extends Container {
 		closing = true;
 		page.onClose(new PageAction(player, page));
 		ContainerUpdater.unregister(page, this);
+		MinecraftForge.EVENT_BUS.unregister(this);
+	}
+
+	@SubscribeEvent(priority = EventPriority.LOWEST)
+	public void onPickup(EntityItemPickupEvent event) {
+		if(!event.getEntity().equals(player)) return;
+
+		if(event.getResult() != Event.Result.DENY && !event.isCanceled()) {
+			Task.builder().execute(() -> updateAllContainerContents())
+					.delay(1)
+					.build();
+		}
 	}
 
 }

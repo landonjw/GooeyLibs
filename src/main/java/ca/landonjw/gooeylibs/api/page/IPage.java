@@ -1,11 +1,11 @@
 package ca.landonjw.gooeylibs.api.page;
 
-import ca.landonjw.gooeylibs.api.template.ITemplate;
+import ca.landonjw.gooeylibs.api.template.Template;
 import ca.landonjw.gooeylibs.internal.updates.ContainerUpdater;
 
 public interface IPage {
 
-	ITemplate getTemplate();
+	Template getTemplate();
 
 	String getTitle();
 

@@ -1,7 +1,6 @@
 package ca.landonjw.gooeylibs;
 
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(
 		modid = GooeyLibs.MOD_ID,
@@ -18,10 +17,5 @@ public class GooeyLibs {
 	public static final String MOD_NAME = "GooeyLibs";
 	/** The version of the library. */
 	public static final String VERSION = "2.0.0";
-
-	@Mod.EventHandler
-	public void serverStarting(FMLServerStartingEvent event) {
-		event.registerServerCommand(new OpenLinkedPage());
-	}
 
 }

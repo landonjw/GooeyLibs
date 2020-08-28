@@ -4,8 +4,7 @@ import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.button.IButton;
 import ca.landonjw.gooeylibs.api.button.LinkedPageButton;
 import ca.landonjw.gooeylibs.api.button.PlaceholderButton;
-import ca.landonjw.gooeylibs.api.template.ChestTemplate;
-import ca.landonjw.gooeylibs.api.template.ITemplate;
+import ca.landonjw.gooeylibs.api.template.Template;
 import com.google.common.collect.Lists;
 
 import javax.annotation.Nonnull;
@@ -129,7 +128,7 @@ public class LinkedPage extends Page {
 			return this;
 		}
 
-		public LinkedPageBuilder template(@Nonnull ChestTemplate template) {
+		public LinkedPageBuilder template(@Nonnull Template template) {
 			super.template(template);
 			return this;
 		}
@@ -168,7 +167,7 @@ public class LinkedPage extends Page {
 			nextPage = null;
 
 			List<LinkedPage> generatedPages = Lists.newArrayList();
-			ChestTemplate originalTemplate = (ChestTemplate) this.template;
+			Template originalTemplate = this.template;
 
 			Iterator<Button> replacementIter = replacements.iterator();
 			while(replacementIter.hasNext()) {
@@ -186,8 +185,8 @@ public class LinkedPage extends Page {
 			return generatedPages.get(0);
 		}
 
-		private ITemplate replacePlaceholdersInTemplate(Iterator<Button> replacementIter, ChestTemplate originalTemplate) {
-			ChestTemplate.ChestTemplateBuilder templateBuilder = new ChestTemplate.ChestTemplateBuilder(originalTemplate);
+		private Template replacePlaceholdersInTemplate(Iterator<Button> replacementIter, Template originalTemplate) {
+			Template.ChestTemplateBuilder templateBuilder = new Template.ChestTemplateBuilder(originalTemplate);
 			for(int i = 0; i < template.getSlots(); i++) {
 				if(!replacementIter.hasNext()) break;
 
