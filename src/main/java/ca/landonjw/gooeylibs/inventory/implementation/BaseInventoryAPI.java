@@ -4,6 +4,7 @@ import ca.landonjw.gooeylibs.inventory.api.Button;
 import ca.landonjw.gooeylibs.inventory.api.InventoryAPI;
 import ca.landonjw.gooeylibs.inventory.api.Page;
 import ca.landonjw.gooeylibs.inventory.api.Template;
+import ca.landonjw.gooeylibs.inventory.internal.Waiter;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.client.CPacketCloseWindow;
 import net.minecraft.network.play.server.SPacketCloseWindow;
@@ -47,11 +48,13 @@ public class BaseInventoryAPI implements InventoryAPI {
     @Override
     public void closePlayerInventory(@Nullable EntityPlayerMP player){
         if(player != null){
-            CPacketCloseWindow pclient = new CPacketCloseWindow();
-            ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, player.openContainer.windowId, 0);
-            SPacketCloseWindow pserver = new SPacketCloseWindow(player.openContainer.windowId);
-            player.connection.processCloseWindow(pclient);
-            player.connection.sendPacket(pserver);
+            new Waiter(() -> {
+                CPacketCloseWindow pclient = new CPacketCloseWindow();
+                ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, player.openContainer.windowId, 0);
+                SPacketCloseWindow pserver = new SPacketCloseWindow(player.openContainer.windowId);
+                player.connection.processCloseWindow(pclient);
+                player.connection.sendPacket(pserver);
+            }, 1);
         }
     }
 
