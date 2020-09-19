@@ -46,8 +46,9 @@ public interface Button {
      *
      * @param player    the player that clicked the button
      * @param clickType the type of click the player used
+     * @param page      the page the button was clicked on
      */
-    void onClick(@Nonnull EntityPlayerMP player, @Nonnull ClickType clickType);
+    void onClick(@Nonnull EntityPlayerMP player, @Nonnull ClickType clickType, @Nonnull Page page);
 
     /**
      * Returns a new {@link Builder} with the content and behavior of the button.

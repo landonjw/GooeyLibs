@@ -21,6 +21,8 @@ public class ButtonAction {
     private final EntityPlayerMP player;
     /** The type of click the player used. */
     private final ClickType clickType;
+    /** The page the button clicked is on. */
+    private final Page page;
 
     /**
      * Constructor for the button action.
@@ -28,13 +30,16 @@ public class ButtonAction {
      * @param button    the button the action is taking place on
      * @param player    the player causing the action
      * @param clickType the type of click the player used
+     * @param page      the page the button was clicked on
      */
     public ButtonAction(@Nonnull Button button,
                         @Nonnull EntityPlayerMP player,
-                        @Nonnull ClickType clickType){
+                        @Nonnull ClickType clickType,
+                        @Nonnull Page page){
         this.button = button;
         this.player = player;
         this.clickType = clickType;
+        this.page = page;
     }
 
     /**
@@ -62,6 +67,10 @@ public class ButtonAction {
      */
     public ClickType getClickType() {
         return clickType;
+    }
+
+    public Page getPage() {
+        return page;
     }
 
 }

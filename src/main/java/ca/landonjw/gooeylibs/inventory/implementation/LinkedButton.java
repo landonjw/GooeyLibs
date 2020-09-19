@@ -88,8 +88,8 @@ public class LinkedButton implements Button {
 
     /** {@inheritDoc} */
     @Override
-    public void onClick(@Nonnull EntityPlayerMP player, @Nonnull ClickType clickType) {
-        button.onClick(player, clickType);
+    public void onClick(@Nonnull EntityPlayerMP player, @Nonnull ClickType clickType, @Nonnull Page page) {
+        button.onClick(player, clickType, page);
         if(button.getType() == ButtonType.PreviousPage){
             page.getPreviousPage().ifPresent((previousPage) -> previousPage.forceOpenPage(player));
         }

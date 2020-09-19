@@ -95,7 +95,7 @@ public class UIContainer extends Container {
         if(slot >= 0 && slot < page.getTemplate().getRows() * 9){
             Button button = page.getTemplate().getButtons()[slot / 9][slot % 9];
             if(button != null){
-                button.onClick(inventory.getPlayer(), clickTypeIn);
+                button.onClick(inventory.getPlayer(), clickTypeIn, page);
             }
         }
         return ItemStack.EMPTY;

@@ -79,9 +79,9 @@ public class BaseButton implements Button {
 
     /** {@inheritDoc} */
     @Override
-    public void onClick(@Nonnull EntityPlayerMP player, @Nonnull ClickType clickType) {
+    public void onClick(@Nonnull EntityPlayerMP player, @Nonnull ClickType clickType, @Nonnull Page page) {
         if(clickBehavior != null){
-            ButtonAction action = new ButtonAction(this, player, clickType);
+            ButtonAction action = new ButtonAction(this, player, clickType, page);
             clickBehavior.accept(action);
         }
     }
