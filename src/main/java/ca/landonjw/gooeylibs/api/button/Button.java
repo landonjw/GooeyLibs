@@ -7,90 +7,75 @@ import net.minecraft.nbt.NBTTagString;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Objects;
+import java.util.Collection;
 import java.util.function.Consumer;
 
-public class Button implements IButton {
+public class Button extends AbstractButton {
 
-	private ItemStack display;
-	private Consumer<ButtonAction> clickBehaviour;
+	private final Consumer<ButtonAction> onClick;
 
-	protected Button(@Nonnull ButtonBuilder builder) {
-		this.display = Objects.requireNonNull(builder.display);
-		this.clickBehaviour = builder.clickBehaviour;
+	protected Button(@Nonnull ItemStack display, @Nullable Consumer<ButtonAction> onClick) {
+		super(display);
+		this.onClick = onClick;
 	}
 
 	@Override
-	public ItemStack getDisplay() {
-		return display;
+	public void onClick(@Nonnull ButtonAction action) {
+		if(onClick != null) onClick.accept(action);
 	}
 
-	@Override
-	public void onClick(ButtonAction action) {
-		if(clickBehaviour != null) clickBehaviour.accept(action);
+	public static Builder builder() {
+		return new Builder();
 	}
 
-	public ButtonBuilder toBuilder() {
-		return new ButtonBuilder(this);
-	}
-
-	public static ButtonBuilder builder() {
-		return new ButtonBuilder();
-	}
-
-	public static class ButtonBuilder {
+	public static class Builder {
 
 		private ItemStack display;
-		private String name;
-		private List<String> lore = Lists.newArrayList();
-		private Consumer<ButtonAction> clickBehaviour;
+		private String title;
+		private Collection<String> lore = Lists.newArrayList();
+		private Consumer<ButtonAction> onClick;
 
-		protected ButtonBuilder() {
-		}
-
-		protected ButtonBuilder(Button button) {
-			this.display = button.getDisplay().copy();
-			this.name = button.getDisplay().getDisplayName();
-			this.clickBehaviour = button.clickBehaviour;
-		}
-
-		public ButtonBuilder item(@Nonnull ItemStack display) {
+		public Builder display(@Nonnull ItemStack display) {
 			this.display = display;
 			return this;
 		}
 
-		public ButtonBuilder name(@Nullable String name) {
-			this.name = (name != null) ? name : "";
+		public Builder title(@Nullable String title) {
+			this.title = title;
 			return this;
 		}
 
-		public ButtonBuilder lore(@Nullable List<String> lore) {
+		public Builder lore(@Nullable Collection<String> lore) {
 			this.lore = (lore != null) ? lore : Lists.newArrayList();
 			return this;
 		}
 
-		public ButtonBuilder onClick(@Nonnull Consumer<ButtonAction> behaviour) {
-			this.clickBehaviour = behaviour;
+		public Builder onClick(@Nullable Consumer<ButtonAction> behaviour) {
+			this.onClick = behaviour;
 			return this;
 		}
 
-		public ButtonBuilder onClick(@Nonnull Runnable behaviour) {
-			this.clickBehaviour = (action) -> behaviour.run();
+		public Builder onClick(@Nullable Runnable behaviour) {
+			if(behaviour != null) {
+				this.onClick = (action) -> behaviour.run();
+			}
+			else{
+				this.onClick = null;
+			}
 			return this;
 		}
 
-		public ButtonBuilder reset() {
-			display = null;
-			name = "";
-			lore = Lists.newArrayList();
-			clickBehaviour = null;
-			return this;
+		public Button build() {
+			validate();
+			return new Button(buildDisplay(), onClick);
 		}
 
-		protected void validateBuild() {
+		private void validate() {
 			if(display == null) throw new IllegalStateException("button display must be defined");
-			if(name != null) display.setStackDisplayName(name);
+		}
+
+		private ItemStack buildDisplay() {
+			if(title != null) display.setStackDisplayName(title);
 
 			if(!lore.isEmpty()) {
 				NBTTagList nbtLore = new NBTTagList();
@@ -105,11 +90,7 @@ public class Button implements IButton {
 			if(display.hasTagCompound()) {
 				display.getTagCompound().setString("tooltip", "");
 			}
-		}
-
-		public Button build() {
-			validateBuild();
-			return new Button(this);
+			return display;
 		}
 
 	}

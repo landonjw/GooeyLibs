@@ -9,10 +9,10 @@ import java.util.Objects;
 
 public class ButtonAction {
 
-	private EntityPlayerMP player;
-	private ClickType clickType;
-	private IButton button;
-	private IPage page;
+	private final EntityPlayerMP player;
+	private final ClickType clickType;
+	private final IButton button;
+	private final IPage page;
 
 	public ButtonAction(@Nonnull EntityPlayerMP player,
 	                    @Nonnull ClickType clickType,

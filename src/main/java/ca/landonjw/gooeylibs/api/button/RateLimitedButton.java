@@ -1,104 +1,78 @@
 package ca.landonjw.gooeylibs.api.button;
 
-import net.minecraft.item.ItemStack;
-
 import javax.annotation.Nonnull;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedList;
-import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
-public class RateLimitedButton implements IButton {
+public class RateLimitedButton extends AbstractButton {
 
-	private IButton button;
+    private final IButton button;
+    private final int limit;
+    private final long timeInterval;
+    private final TimeUnit timeUnit;
 
-	private int limit;
-	private long timeInterval;
-	private TimeUnit timeUnit;
+    private final Queue<Instant> lastActionTimes = new LinkedList<>();
 
-	private Queue<Instant> lastActionTimes = new LinkedList<>();
+    protected RateLimitedButton(@Nonnull IButton button, int limit, long timeInterval, @Nonnull TimeUnit timeUnit) {
+        super(button.getDisplay());
+        this.button = button;
+        this.limit = limit;
+        this.timeInterval = timeInterval;
+        this.timeUnit = timeUnit;
+    }
 
-	protected RateLimitedButton(@Nonnull RateLimitedButtonBuilder builder) {
-		this.button = builder.button;
-		this.limit = builder.limit;
-		this.timeInterval = builder.timeInterval;
-		this.timeUnit = Objects.requireNonNull(builder.timeUnit);
-	}
+    @Override
+    public void onClick(@Nonnull ButtonAction action) {
+        if(isRateLimited()) return;
 
-	@Override
-	public ItemStack getDisplay() {
-		return button.getDisplay();
-	}
+        if(isTopElementAboveTimeThreshold()) lastActionTimes.remove();
+        button.onClick(action);
+        lastActionTimes.add(Instant.now());
+    }
 
-	@Override
-	public void onClick(ButtonAction action) {
-		if(isRateLimited()) return;
+    private boolean isRateLimited() {
+        if(lastActionTimes.size() < limit) return false;
+        return !isTopElementAboveTimeThreshold();
+    }
 
-		if(isTopElementAboveTimeThreadhold()) lastActionTimes.remove();
-		button.onClick(action);
-		lastActionTimes.add(Instant.now());
-	}
+    private boolean isTopElementAboveTimeThreshold() {
+        if(lastActionTimes.isEmpty()) return false;
+        Instant earliestActionTime = lastActionTimes.peek();
+        return Duration.between(earliestActionTime, Instant.now()).toMillis() > timeUnit.toMillis(timeInterval);
+    }
 
-	private boolean isRateLimited() {
-		if(lastActionTimes.size() < limit) return false;
-		return !isTopElementAboveTimeThreadhold();
-	}
+    public static class RateLimitedButtonBuilder {
 
-	private boolean isTopElementAboveTimeThreadhold() {
-		if(lastActionTimes.isEmpty()) return false;
-		Instant earliestActionTime = lastActionTimes.peek();
-		return Duration.between(earliestActionTime, Instant.now()).toMillis() > timeUnit.toMillis(timeInterval);
-	}
+        private IButton button;
+        private int limit;
+        private long timeInterval;
+        private TimeUnit timeUnit;
 
-	public RateLimitedButton clone() {
-		return new RateLimitedButtonBuilder(this).build();
-	}
+        protected RateLimitedButtonBuilder() { }
 
-	public RateLimitedButtonBuilder toBuilder() {
-		return new RateLimitedButtonBuilder(this);
-	}
+        public RateLimitedButtonBuilder button(IButton button) {
+            this.button = button;
+            return this;
+        }
 
-	public static RateLimitedButtonBuilder builder() {
-		return new RateLimitedButtonBuilder();
-	}
+        public RateLimitedButtonBuilder limit(int limit) {
+            this.limit = limit;
+            return this;
+        }
 
-	public static class RateLimitedButtonBuilder {
+        public RateLimitedButtonBuilder interval(long time, @Nonnull TimeUnit timeUnit) {
+            this.timeInterval = time;
+            this.timeUnit = timeUnit;
+            return this;
+        }
 
-		private IButton button;
-		private int limit;
-		private long timeInterval;
-		private TimeUnit timeUnit;
+        public RateLimitedButton build() {
+            return new RateLimitedButton(button, limit, timeInterval, timeUnit);
+        }
 
-		protected RateLimitedButtonBuilder() {
-
-		}
-
-		protected RateLimitedButtonBuilder(RateLimitedButton button) {
-
-		}
-
-		public RateLimitedButtonBuilder button(IButton button) {
-			this.button = button;
-			return this;
-		}
-
-		public RateLimitedButtonBuilder limit(int limit) {
-			this.limit = limit;
-			return this;
-		}
-
-		public RateLimitedButtonBuilder interval(long time, @Nonnull TimeUnit timeUnit) {
-			this.timeInterval = time;
-			this.timeUnit = timeUnit;
-			return this;
-		}
-
-		public RateLimitedButton build() {
-			return new RateLimitedButton(this);
-		}
-
-	}
+    }
 
 }

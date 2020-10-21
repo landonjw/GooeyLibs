@@ -1,8 +1,8 @@
 package ca.landonjw.gooeylibs.api;
 
 import ca.landonjw.gooeylibs.api.page.IPage;
-import ca.landonjw.gooeylibs.internal.inventory.GooeyContainer;
-import ca.landonjw.gooeylibs.internal.tasks.Task;
+import ca.landonjw.gooeylibs.implementation.GooeyContainer;
+import ca.landonjw.gooeylibs.implementation.tasks.Task;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.play.client.CPacketCloseWindow;
 import net.minecraft.network.play.server.SPacketCloseWindow;
@@ -30,14 +30,18 @@ public class UIManager {
 	}
 
 	public static void closeUI(@Nonnull EntityPlayerMP player) {
-		int windowId = player.openContainer == null ? 0 : player.openContainer.windowId;
+		Task.builder()
+				.execute(() -> {
+					int windowId = player.openContainer == null ? 0 : player.openContainer.windowId;
 
-		CPacketCloseWindow pclient = new CPacketCloseWindow();
-		ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, windowId, 0);
-		SPacketCloseWindow pserver = new SPacketCloseWindow(windowId);
+					CPacketCloseWindow pclient = new CPacketCloseWindow();
+					ObfuscationReflectionHelper.setPrivateValue(CPacketCloseWindow.class, pclient, windowId, 0);
+					SPacketCloseWindow pserver = new SPacketCloseWindow(windowId);
 
-		player.connection.processCloseWindow(pclient);
-		player.connection.sendPacket(pserver);
+					player.connection.processCloseWindow(pclient);
+					player.connection.sendPacket(pserver);
+				})
+				.build();
 	}
 
 }

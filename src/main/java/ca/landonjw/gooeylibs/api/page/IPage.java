@@ -1,20 +1,23 @@
 package ca.landonjw.gooeylibs.api.page;
 
-import ca.landonjw.gooeylibs.api.template.Template;
-import ca.landonjw.gooeylibs.internal.updates.ContainerUpdater;
+import ca.landonjw.gooeylibs.api.data.EventEmitter;
+import ca.landonjw.gooeylibs.api.template.ITemplate;
 
-public interface IPage {
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-	Template getTemplate();
+public interface IPage extends EventEmitter<IPage> {
 
-	String getTitle();
+    ITemplate getTemplate();
 
-	void onOpen(PageAction action);
+    void setTemplate(@Nonnull ITemplate template);
 
-	void onClose(PageAction action);
+    String getTitle();
 
-	default void update() {
-		ContainerUpdater.update(this);
-	}
+    void setTitle(@Nullable String title);
+
+    void onOpen(@Nonnull PageAction action);
+
+    void onClose(@Nonnull PageAction action);
 
 }

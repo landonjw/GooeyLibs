@@ -1,4 +1,4 @@
-package ca.landonjw.gooeylibs.internal.tasks;
+package ca.landonjw.gooeylibs.implementation.tasks;
 
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;

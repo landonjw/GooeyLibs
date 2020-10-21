@@ -1,4 +1,4 @@
-package ca.landonjw.gooeylibs.internal.tasks;
+package ca.landonjw.gooeylibs.implementation.tasks;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;

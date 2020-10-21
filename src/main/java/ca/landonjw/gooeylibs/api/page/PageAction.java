@@ -6,20 +6,20 @@ import javax.annotation.Nonnull;
 
 public class PageAction {
 
-	private EntityPlayerMP player;
-	private IPage page;
+    private final EntityPlayerMP player;
+    private final IPage page;
 
-	public PageAction(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
-		this.player = player;
-		this.page = page;
-	}
+    public PageAction(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
+        this.player = player;
+        this.page = page;
+    }
 
-	public EntityPlayerMP getPlayer() {
-		return player;
-	}
+    public EntityPlayerMP getPlayer() {
+        return player;
+    }
 
-	public IPage getPage() {
-		return page;
-	}
+    public IPage getPage() {
+        return page;
+    }
 
 }
