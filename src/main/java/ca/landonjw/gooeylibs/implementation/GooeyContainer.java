@@ -1,7 +1,6 @@
 package ca.landonjw.gooeylibs.implementation;
 
 import ca.landonjw.gooeylibs.api.button.ButtonAction;
-import ca.landonjw.gooeylibs.api.button.IButton;
 import ca.landonjw.gooeylibs.api.page.IPage;
 import ca.landonjw.gooeylibs.api.page.PageAction;
 import ca.landonjw.gooeylibs.api.template.ITemplate;
@@ -35,8 +34,6 @@ public class GooeyContainer extends Container {
 	private IPage page;
 	private ITemplate template;
 
-	private NonNullList<ItemStack> stacksToDisplay;
-
 	private long lastClickTick;
 	private boolean closing;
 
@@ -45,16 +42,16 @@ public class GooeyContainer extends Container {
 		this.windowId = 1;
 
 		this.page = page;
-		this.inventorySlots.addAll(this.page.getTemplate().getSlots());
 
 		subscribeToPage(page);
+		subscribeToTemplateSlots(page.getTemplate());
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 
 	private void subscribeToPage(IPage page) {
 		page.subscribe(this, (update) -> {
 			this.fillStacksToDisplay(update.getTemplate());
-			this.unsubscribeToTemplateSlots(this.template);
+			if (template != null) this.unsubscribeToTemplateSlots(this.template);
 			this.template = update.getTemplate();
 			this.subscribeToTemplateSlots(page.getTemplate());
 			this.refreshContainer();
@@ -67,7 +64,7 @@ public class GooeyContainer extends Container {
 	}
 
 	private void fillStacksToDisplay(ITemplate template) {
-		this.stacksToDisplay = template.getSlots().stream()
+		this.inventoryItemStacks = template.getSlots().stream()
 				.map(TemplateSlot::getStack)
 				.collect(Collectors.toCollection(NonNullList::create));
 	}
@@ -89,6 +86,9 @@ public class GooeyContainer extends Container {
 		player.closeContainer();
 		player.openContainer = this;
 		player.currentWindowId = windowId;
+
+		this.fillStacksToDisplay(page.getTemplate());
+		this.inventorySlots.addAll(this.page.getTemplate().getSlots());
 
 		SPacketOpenWindow openWindow = new SPacketOpenWindow(
 				player.currentWindowId,
@@ -116,18 +116,19 @@ public class GooeyContainer extends Container {
 		else if(clickType == ClickType.CLONE) {
 			SPacketSetSlot setClickedSlot = new SPacketSetSlot(windowId, slot, getItemToSend(slot));
 			player.connection.sendPacket(setClickedSlot);
-		}
-		else if(clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL) {
-			if(lastClickTick == server.getTickCounter()) return ItemStack.EMPTY;
+		} else if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL) {
+			if (lastClickTick == server.getTickCounter()) return ItemStack.EMPTY;
 			updateAllContainerContents();
 		}
 
 		clearPlayersCursor();
 		lastClickTick = server.getTickCounter();
 
-		page.getTemplate().getSlot(slot).getButton().ifPresent((button) -> {
-			button.onClick(new ButtonAction(player, clickType, button, page));
-		});
+		if (slot >= 0 && slot < inventorySlots.size()) {
+			page.getTemplate().getSlot(slot).getButton().ifPresent((button) -> {
+				button.onClick(new ButtonAction(player, clickType, button, page));
+			});
+		}
 		return ItemStack.EMPTY;
 	}
 
@@ -155,10 +156,11 @@ public class GooeyContainer extends Container {
 				page.getTemplate().getSize()
 		);
 		player.connection.sendPacket(openWindow);
+		updateAllContainerContents();
 	}
 
 	private void updateAllContainerContents() {
-		player.sendAllContents(player.openContainer, stacksToDisplay);
+		player.sendAllContents(player.openContainer, inventoryItemStacks);
 
 		/*
 		 * Detects changes in the player's inventory and updates them. This is to prevent desyncs if a player

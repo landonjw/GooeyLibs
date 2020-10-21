@@ -4,20 +4,17 @@ import ca.landonjw.gooeylibs.api.data.EventEmitter;
 import ca.landonjw.gooeylibs.api.template.ITemplate;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public interface IPage extends EventEmitter<IPage> {
 
     ITemplate getTemplate();
 
-    void setTemplate(@Nonnull ITemplate template);
-
     String getTitle();
 
-    void setTitle(@Nullable String title);
+    default void onOpen(@Nonnull PageAction action) {
+    }
 
-    void onOpen(@Nonnull PageAction action);
-
-    void onClose(@Nonnull PageAction action);
+    default void onClose(@Nonnull PageAction action) {
+    }
 
 }

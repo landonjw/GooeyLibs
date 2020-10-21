@@ -6,8 +6,9 @@ import javax.annotation.Nonnull;
 
 public interface IButton {
 
-	ItemStack getDisplay();
+    ItemStack getDisplay();
 
-	void onClick(@Nonnull ButtonAction action);
+    default void onClick(@Nonnull ButtonAction action) {
+    }
 
 }

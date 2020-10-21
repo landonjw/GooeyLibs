@@ -21,7 +21,6 @@ public abstract class AbstractPage extends EventEmitterBase<IPage> implements IP
         return template;
     }
 
-    @Override
     public void setTemplate(@Nonnull ITemplate template) {
         this.template = template;
         this.emit(this);
@@ -32,7 +31,6 @@ public abstract class AbstractPage extends EventEmitterBase<IPage> implements IP
         return title;
     }
 
-    @Override
     public void setTitle(@Nullable String title) {
         this.title = (title == null) ? "" : title;
         this.emit(this);

@@ -7,7 +7,7 @@ import javax.annotation.Nullable;
 import java.util.Map;
 import java.util.function.Consumer;
 
-public abstract class EventEmitterBase<T> implements EventEmitter<T> {
+public class EventEmitterBase<T> implements EventEmitter<T> {
 
     private final Map<Object, Consumer<T>> observers = Maps.newHashMap();
 

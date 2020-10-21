@@ -1,6 +1,5 @@
 package ca.landonjw.gooeylibs.api.template;
 
-import ca.landonjw.gooeylibs.api.data.EventEmitter;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
 import net.minecraft.util.NonNullList;
 
