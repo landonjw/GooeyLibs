@@ -1,46 +1,50 @@
 package ca.landonjw.gooeylibs.api.template.slot;
 
-import ca.landonjw.gooeylibs.api.button.IButton;
+import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.data.EventEmitter;
-import com.google.common.collect.Maps;
+import ca.landonjw.gooeylibs.api.data.Subject;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-public class TemplateSlot extends Slot implements EventEmitter<TemplateSlot> {
+public class TemplateSlot extends Slot implements Subject<TemplateSlot> {
 
-    private final Map<Object, Consumer<TemplateSlot>> observers = Maps.newHashMap();
-    private IButton button;
+    private final EventEmitter<TemplateSlot> eventEmitter = new EventEmitter<>();
+    private Button button;
 
-    public TemplateSlot(@Nullable IButton button, int index, int xPosition, int yPosition) {
+    public TemplateSlot(@Nullable Button button, int index, int xPosition, int yPosition) {
         super(null, index, xPosition, yPosition);
         this.button = button;
     }
 
-    public Optional<IButton> getButton() {
+    public Optional<Button> getButton() {
         return Optional.ofNullable(button);
     }
 
-    public void setButton(@Nullable IButton button) {
+    public void setButton(@Nullable Button button) {
+        if (this.button != null) this.button.unsubscribe(this);
         this.button = button;
-        this.emit(this);
+        if (button != null) button.subscribe(this, this::update);
+
+        update();
     }
 
-    public void emit(@Nullable TemplateSlot value) {
-        this.observers.values().forEach((observer) -> observer.accept(this));
+    @Override
+    public void subscribe(@Nonnull Object observer, @Nonnull Consumer<TemplateSlot> consumer) {
+        this.eventEmitter.subscribe(observer, consumer);
     }
 
-    public void subscribe(@Nonnull Object subscriber, @Nonnull Consumer<TemplateSlot> consumer) {
-        this.observers.put(subscriber, consumer);
+    @Override
+    public void unsubscribe(@Nonnull Object observer) {
+        this.eventEmitter.unsubscribe(observer);
     }
 
-    public void unsubscribe(@Nonnull Object subscriber) {
-        this.observers.remove(subscriber);
+    public void update() {
+        this.eventEmitter.emit(this);
     }
 
     @Override

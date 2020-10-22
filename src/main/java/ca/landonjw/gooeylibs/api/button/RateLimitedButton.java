@@ -7,16 +7,16 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
-public class RateLimitedButton extends AbstractButton {
+public class RateLimitedButton extends Button {
 
-    private final IButton button;
+    private final Button button;
     private final int limit;
     private final long timeInterval;
     private final TimeUnit timeUnit;
 
     private final Queue<Instant> lastActionTimes = new LinkedList<>();
 
-    protected RateLimitedButton(@Nonnull IButton button, int limit, long timeInterval, @Nonnull TimeUnit timeUnit) {
+    protected RateLimitedButton(@Nonnull Button button, int limit, long timeInterval, @Nonnull TimeUnit timeUnit) {
         super(button.getDisplay());
         this.button = button;
         this.limit = limit;
@@ -34,36 +34,38 @@ public class RateLimitedButton extends AbstractButton {
     }
 
     private boolean isRateLimited() {
-        if(lastActionTimes.size() < limit) return false;
+        if (lastActionTimes.size() < limit) return false;
         return !isTopElementAboveTimeThreshold();
     }
 
     private boolean isTopElementAboveTimeThreshold() {
-        if(lastActionTimes.isEmpty()) return false;
+        if (lastActionTimes.isEmpty()) return false;
         Instant earliestActionTime = lastActionTimes.peek();
         return Duration.between(earliestActionTime, Instant.now()).toMillis() > timeUnit.toMillis(timeInterval);
     }
 
-    public static class RateLimitedButtonBuilder {
+    public static Builder builder() {
+        return new Builder();
+    }
 
-        private IButton button;
+    public static class Builder {
+
+        private Button button;
         private int limit;
         private long timeInterval;
         private TimeUnit timeUnit;
 
-        protected RateLimitedButtonBuilder() { }
-
-        public RateLimitedButtonBuilder button(IButton button) {
+        public Builder button(Button button) {
             this.button = button;
             return this;
         }
 
-        public RateLimitedButtonBuilder limit(int limit) {
+        public Builder limit(int limit) {
             this.limit = limit;
             return this;
         }
 
-        public RateLimitedButtonBuilder interval(long time, @Nonnull TimeUnit timeUnit) {
+        public Builder interval(long time, @Nonnull TimeUnit timeUnit) {
             this.timeInterval = time;
             this.timeUnit = timeUnit;
             return this;

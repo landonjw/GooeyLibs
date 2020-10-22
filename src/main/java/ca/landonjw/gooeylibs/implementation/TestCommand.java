@@ -1,11 +1,10 @@
 package ca.landonjw.gooeylibs.implementation;
 
 import ca.landonjw.gooeylibs.api.UIManager;
-import ca.landonjw.gooeylibs.api.button.Button;
-import ca.landonjw.gooeylibs.api.page.Page;
+import ca.landonjw.gooeylibs.api.button.GooeyButton;
+import ca.landonjw.gooeylibs.api.page.GooeyPage;
 import ca.landonjw.gooeylibs.api.template.chest.ChestTemplate;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
@@ -26,7 +25,7 @@ public class TestCommand extends CommandBase {
 
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
-        Button button = Button.builder()
+        GooeyButton button = GooeyButton.builder()
                 .display(new ItemStack(Items.DIAMOND))
                 .title("Hello")
                 .build();
@@ -35,7 +34,7 @@ public class TestCommand extends CommandBase {
                 .fill(button)
                 .build();
 
-        Page page = Page.builder()
+        GooeyPage page = GooeyPage.builder()
                 .template(template)
                 .title("Hello world")
                 .build();

@@ -1,86 +1,63 @@
 package ca.landonjw.gooeylibs.api.page;
 
-import ca.landonjw.gooeylibs.api.template.ITemplate;
+import ca.landonjw.gooeylibs.api.data.EventEmitter;
+import ca.landonjw.gooeylibs.api.data.Subject;
+import ca.landonjw.gooeylibs.api.template.Template;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class Page extends AbstractPage {
+public abstract class Page implements Subject<Page> {
 
-    private final Consumer<PageAction> onOpen, onClose;
+    private final EventEmitter<Page> eventEmitter = new EventEmitter<>();
+    private Template template;
+    private String title;
 
-    public Page(@Nonnull ITemplate template, @Nullable String title, @Nullable Consumer<PageAction> onOpen, @Nullable Consumer<PageAction> onClose) {
-        super(template, title);
-        this.onOpen = onOpen;
-        this.onClose = onClose;
+    protected Page() {
+        this.title = "";
     }
 
-    @Override
+    public Page(@Nonnull Template template, @Nullable String title) {
+        this.template = template;
+        this.title = (title != null) ? title : "";
+    }
+
+    public Template getTemplate() {
+        if (template == null) throw new IllegalStateException("template could not be found on the page!");
+        return template;
+    }
+
+    public void setTemplate(@Nonnull Template template) {
+        this.template = template;
+        update();
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(@Nullable String title) {
+        this.title = (title == null) ? "" : title;
+        update();
+    }
+
     public void onOpen(@Nonnull PageAction action) {
-        if(onOpen != null) onOpen.accept(action);
     }
 
-    @Override
     public void onClose(@Nonnull PageAction action) {
-        if(onClose != null) onClose.accept(action);
     }
 
-    public static Builder builder() {
-        return new Builder();
+    public void subscribe(@Nonnull Object observer, @Nonnull Consumer<Page> consumer) {
+        this.eventEmitter.subscribe(observer, consumer);
     }
 
-    public static class Builder {
+    public void unsubscribe(@Nonnull Object observer) {
+        this.eventEmitter.unsubscribe(observer);
+    }
 
-        private String title;
-        private ITemplate template;
-        private Consumer<PageAction> onOpen, onClose;
-
-        public Builder title(@Nullable String title) {
-            this.title = title;
-            return this;
-        }
-
-        public Builder template(@Nonnull ITemplate template) {
-            this.template = template;
-            return this;
-        }
-
-        public Builder onOpen(@Nullable Consumer<PageAction> behaviour) {
-            this.onOpen = behaviour;
-            return this;
-        }
-
-        public Builder onOpen(@Nullable Runnable behaviour) {
-            if(behaviour == null) {
-                this.onOpen = null;
-            }
-            else{
-                onOpen((action) -> behaviour.run());
-            }
-            return this;
-        }
-
-        public Builder onClose(@Nullable Consumer<PageAction> behaviour) {
-            this.onClose = behaviour;
-            return this;
-        }
-
-        public Builder onClose(@Nullable Runnable behaviour) {
-            if(behaviour == null) {
-                this.onClose = null;
-            }
-            else{
-                onClose((action) -> behaviour.run());
-            }
-            return this;
-        }
-
-        public Page build() {
-            if(template == null) throw new IllegalStateException("template must be defined");
-            return new Page(template, title, onOpen, onClose);
-        }
-
+    public void update() {
+        this.eventEmitter.emit(this);
     }
 
 }

@@ -1,15 +1,15 @@
 package ca.landonjw.gooeylibs.api.template.chest;
 
-import ca.landonjw.gooeylibs.api.button.IButton;
-import ca.landonjw.gooeylibs.api.template.AbstractTemplate;
+import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.template.LineType;
+import ca.landonjw.gooeylibs.api.template.Template;
 import ca.landonjw.gooeylibs.api.template.TemplateType;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class ChestTemplate extends AbstractTemplate {
+public class ChestTemplate extends Template {
 
     public ChestTemplate(@Nonnull TemplateSlot[] slots) {
         super(TemplateType.CHEST, slots);
@@ -31,57 +31,56 @@ public class ChestTemplate extends AbstractTemplate {
 
         private final int COLUMNS = 9;
         private final int rows;
-        private final IButton[] buttons;
+        private final Button[] buttons;
 
-        protected IButton get(int row, int col) {
+        protected Button get(int row, int col) {
             return buttons[row * 9 + col];
         }
 
-        protected IButton get(int index) {
+        protected Button get(int index) {
             return buttons[index];
         }
 
         public Builder(int rows) {
             this.rows = rows;
-            this.buttons = new IButton[rows * COLUMNS];
+            this.buttons = new Button[rows * COLUMNS];
         }
 
-        public Builder set(int index, @Nullable IButton button) {
+        public Builder set(int index, @Nullable Button button) {
             this.buttons[index] = button;
             return this;
         }
 
-        public Builder set(int row, int col, @Nullable IButton button) {
+        public Builder set(int row, int col, @Nullable Button button) {
             return set(row * 9 + col, button);
         }
 
-        public Builder row(int row, @Nullable IButton button) {
-            if(row < 0 || row >= rows) return this;
-            for(int col = 0; col < COLUMNS; col++){
+        public Builder row(int row, @Nullable Button button) {
+            if (row < 0 || row >= rows) return this;
+            for (int col = 0; col < COLUMNS; col++) {
                 set(row, col, button);
             }
             return this;
         }
 
-        public Builder column(int col, @Nullable IButton button) {
-            if(col < 0 || col >= COLUMNS) return this;
-            for(int row = 0; row < rows; row++){
+        public Builder column(int col, @Nullable Button button) {
+            if (col < 0 || col >= COLUMNS) return this;
+            for (int row = 0; row < rows; row++) {
                 set(row, col, button);
             }
             return this;
         }
 
-        public Builder line(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nullable IButton button) {
-            if(lineType == LineType.HORIZONTAL) {
-                if(startRow < 0 || startRow > rows) return this;
+        public Builder line(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nullable Button button) {
+            if (lineType == LineType.HORIZONTAL) {
+                if (startRow < 0 || startRow > rows) return this;
 
                 int endCol = startCol + length;
-                for(int col = Math.min(0, startCol); col < Math.max(COLUMNS, endCol); col++) {
+                for (int col = Math.min(0, startCol); col < Math.max(COLUMNS, endCol); col++) {
                     set(startRow, col, button);
                 }
-            }
-            else {
-                if(startCol < 0 || startCol > COLUMNS) return this;
+            } else {
+                if (startCol < 0 || startCol > COLUMNS) return this;
 
                 int endRow = startRow + length;
                 for(int row = Math.min(0, startRow); row < Math.max(rows, endRow); row++) {
@@ -91,50 +90,50 @@ public class ChestTemplate extends AbstractTemplate {
             return this;
         }
 
-        public Builder square(int startRow, int startCol, int size, @Nullable IButton button) {
+        public Builder square(int startRow, int startCol, int size, @Nullable Button button) {
             return rectangle(startRow, startCol, size, size, button);
         }
 
-        public Builder rectangle(int startRow, int startCol, int length, int width, @Nullable IButton button) {
+        public Builder rectangle(int startRow, int startCol, int length, int width, @Nullable Button button) {
             startRow = Math.max(0, startRow);
             startCol = Math.max(0, startCol);
             int endRow = Math.min(rows, startRow + length);
             int endCol = Math.min(COLUMNS, startCol + width);
 
-            for(int row = startRow; row < endRow; row++) {
-                for(int col = startCol; col < endCol; col++) {
+            for (int row = startRow; row < endRow; row++) {
+                for (int col = startCol; col < endCol; col++) {
                     set(row, col, button);
                 }
             }
             return this;
         }
 
-        public Builder border(int startRow, int startCol, int length, int width, @Nullable IButton button) {
+        public Builder border(int startRow, int startCol, int length, int width, @Nullable Button button) {
             startRow = Math.max(0, startRow);
             startCol = Math.max(0, startCol);
             int endRow = Math.min(rows, startRow + length);
             int endCol = Math.min(COLUMNS, startCol + width);
 
-            for(int row = startRow; row < endRow; row++) {
+            for (int row = startRow; row < endRow; row++) {
                 set(row, startCol, button);
                 set(row, endCol - 1, button);
             }
-            for(int col = startCol; col < endCol; col++) {
+            for (int col = startCol; col < endCol; col++) {
                 set(startRow, col, button);
                 set(endRow - 1, col, button);
             }
             return this;
         }
 
-        public Builder checker(int startRow, int startCol, int length, int width, @Nullable IButton button) {
+        public Builder checker(int startRow, int startCol, int length, int width, @Nullable Button button) {
             startRow = Math.max(0, startRow);
             startCol = Math.max(0, startCol);
             int endRow = Math.min(rows, startRow + length);
             int endCol = Math.min(COLUMNS, startCol + width);
 
-            for(int row = startRow; row < endRow; row++) {
-                for(int col = startCol; col < endCol; col++) {
-                    if(row - col == 0 || (row - col) % 2 == 0) {
+            for (int row = startRow; row < endRow; row++) {
+                for (int col = startCol; col < endCol; col++) {
+                    if (row - col == 0 || (row - col) % 2 == 0) {
                         set(row, col, button);
                     }
                 }
@@ -142,10 +141,10 @@ public class ChestTemplate extends AbstractTemplate {
             return this;
         }
 
-        public Builder fill(@Nullable IButton button) {
-            for(int row = 0; row < rows; row++) {
-                for(int col = 0; col < COLUMNS; col++) {
-                    if(get(row, col) == null) {
+        public Builder fill(@Nullable Button button) {
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < COLUMNS; col++) {
+                    if (get(row, col) == null) {
                         set(row, col, button);
                     }
                 }

@@ -1,6 +1,6 @@
 package ca.landonjw.gooeylibs.api;
 
-import ca.landonjw.gooeylibs.api.page.IPage;
+import ca.landonjw.gooeylibs.api.page.Page;
 import ca.landonjw.gooeylibs.implementation.GooeyContainer;
 import ca.landonjw.gooeylibs.implementation.tasks.Task;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -12,15 +12,15 @@ import javax.annotation.Nonnull;
 
 public class UIManager {
 
-	public static void openUIPassively(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
+	public static void openUIPassively(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
 		Task.builder()
 				.execute(() -> openUIForcefully(player, page))
 				.delay(1)
 				.build();
 	}
 
-	public static void openUIForcefully(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
-		if(player.openContainer instanceof GooeyContainer) {
+	public static void openUIForcefully(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
+		if (player.openContainer instanceof GooeyContainer) {
 			((GooeyContainer) player.openContainer).setPage(page);
 			return;
 		}

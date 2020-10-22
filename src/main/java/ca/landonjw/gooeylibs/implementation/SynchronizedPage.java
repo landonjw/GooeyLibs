@@ -1,57 +1,48 @@
 package ca.landonjw.gooeylibs.implementation;
 
-import ca.landonjw.gooeylibs.api.button.Button;
-import ca.landonjw.gooeylibs.api.data.EventEmitterBase;
-import ca.landonjw.gooeylibs.api.page.IPage;
-import ca.landonjw.gooeylibs.api.template.ITemplate;
+import ca.landonjw.gooeylibs.api.button.GooeyButton;
+import ca.landonjw.gooeylibs.api.page.Page;
+import ca.landonjw.gooeylibs.api.template.Template;
 import ca.landonjw.gooeylibs.api.template.chest.ChestTemplate;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
-public class SynchronizedPage extends EventEmitterBase<IPage> implements IPage {
+public class SynchronizedPage extends Page {
 
-    private final ChestTemplate template;
     private boolean active = false;
 
-    private final Button setInactiveButton = Button.builder()
+    private final GooeyButton setInactiveButton = GooeyButton.builder()
             .display(new ItemStack(Blocks.WOOL, 1, EnumDyeColor.RED.getMetadata()))
             .title("Set Inactive")
             .onClick(() -> setActive(false))
             .build();
 
-    private final Button setActiveButton = Button.builder()
+    private final GooeyButton setActiveButton = GooeyButton.builder()
             .display(new ItemStack(Blocks.WOOL, 1, EnumDyeColor.GREEN.getMetadata()))
             .title("Set Active")
             .onClick(() -> setActive(true))
             .build();
 
     public SynchronizedPage() {
-        Button filler = Button.builder()
+        GooeyButton filler = GooeyButton.builder()
                 .display(new ItemStack(Blocks.STAINED_GLASS_PANE, 1, EnumDyeColor.GRAY.getMetadata()))
                 .build();
 
-        this.template = ChestTemplate.builder(6)
+        Template template = ChestTemplate.builder(6)
                 .fill(filler)
                 .set(3, 4, setActiveButton)
                 .build();
+        setTemplate(template);
+        setTitle(TextFormatting.RED + "Inactive Page!");
     }
 
     private void setActive(boolean state) {
         this.active = state;
-        this.template.getSlot(3, 4).setButton((state) ? setInactiveButton : setActiveButton);
-        this.emit(this);
-    }
-
-    @Override
-    public ITemplate getTemplate() {
-        return template;
-    }
-
-    @Override
-    public String getTitle() {
-        return active ? TextFormatting.GREEN + "Active Page!" : TextFormatting.RED + "Inactive Page!";
+        ((ChestTemplate) getTemplate()).getSlot(3, 4).setButton((state) ? setInactiveButton : setActiveButton);
+        setTitle(active ? TextFormatting.GREEN + "Active Page!" : TextFormatting.RED + "Inactive Page!");
+        update();
     }
 
 }

@@ -1,12 +1,10 @@
 package ca.landonjw.gooeylibs.implementation;
 
 import ca.landonjw.gooeylibs.api.UIManager;
-import ca.landonjw.gooeylibs.api.button.Button;
-import ca.landonjw.gooeylibs.api.page.Page;
-import ca.landonjw.gooeylibs.api.template.chest.ChestTemplate;
-import ca.landonjw.gooeylibs.implementation.tasks.Task;
+import ca.landonjw.gooeylibs.api.button.GooeyButton;
+import ca.landonjw.gooeylibs.api.page.GooeyPage;
+import ca.landonjw.gooeylibs.api.template.chest.FurnaceTemplate;
 import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.init.Items;
@@ -28,35 +26,38 @@ public class Test2Command extends CommandBase {
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        Button button = Button.builder()
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+        GooeyButton button1 = GooeyButton.builder()
                 .display(new ItemStack(Items.DIAMOND))
                 .title("Hello")
                 .build();
 
-        ChestTemplate template = ChestTemplate.builder(6)
-                .fill(button)
+        GooeyButton button2 = GooeyButton.builder()
+                .display(new ItemStack(Items.EMERALD))
+                .title("Hello")
                 .build();
 
-        Page page = Page.builder()
+        GooeyButton button3 = GooeyButton.builder()
+                .display(new ItemStack(Items.GOLD_INGOT))
+                .title("Hello")
+                .build();
+
+//        ChestTemplate template = ChestTemplate.builder(6)
+//                .fill(button)
+//                .build();
+
+        FurnaceTemplate template = FurnaceTemplate.builder()
+                .inputMaterial(button1)
+                .fuel(button2)
+                .outputMaterial(button3)
+                .build();
+
+        GooeyPage page = GooeyPage.builder()
                 .template(template)
                 .title("Hello world")
                 .build();
 
         UIManager.openUIForcefully((EntityPlayerMP) sender, page);
-
-        Button emerald = Button.builder()
-                .display(new ItemStack(Items.EMERALD))
-                .build();
-
-        Task.builder()
-                .execute(() -> {
-                    int invIndex = ++index % page.getTemplate().getSize();
-                    page.getTemplate().getSlot(invIndex).setButton(emerald);
-                })
-                .infinite()
-                .interval(5)
-                .build();
     }
 
 }

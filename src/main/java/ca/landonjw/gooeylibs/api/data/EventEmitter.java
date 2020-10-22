@@ -1,19 +1,27 @@
 package ca.landonjw.gooeylibs.api.data;
 
+import com.google.common.collect.Maps;
+
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import java.util.Map;
 import java.util.function.Consumer;
 
-public interface EventEmitter<T> {
+public class EventEmitter<T> implements Subject<T> {
 
-    void emit(@Nullable T value);
+    private final Map<Object, Consumer<T>> observers = Maps.newHashMap();
 
-    void subscribe(@Nonnull Object subscriber, @Nonnull Consumer<T> consumer);
-
-    default void subscribe(@Nonnull Object subscriber, @Nonnull Runnable runnable) {
-        subscribe(subscriber, runnable::run);
+    @Override
+    public void subscribe(@Nonnull Object subscriber, @Nonnull Consumer<T> consumer) {
+        this.observers.put(subscriber, consumer);
     }
 
-    void unsubscribe(@Nonnull Object subscriber);
+    @Override
+    public void unsubscribe(@Nonnull Object subscriber) {
+        this.observers.remove(subscriber);
+    }
+
+    public void emit(T value) {
+        this.observers.values().forEach((observer) -> observer.accept(value));
+    }
 
 }

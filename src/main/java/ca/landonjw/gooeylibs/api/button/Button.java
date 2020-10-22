@@ -1,98 +1,45 @@
 package ca.landonjw.gooeylibs.api.button;
 
-import com.google.common.collect.Lists;
+import ca.landonjw.gooeylibs.api.data.EventEmitter;
+import ca.landonjw.gooeylibs.api.data.Subject;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.function.Consumer;
 
-public class Button extends AbstractButton {
+import static java.util.Objects.requireNonNull;
 
-	private final Consumer<ButtonAction> onClick;
+public abstract class Button implements Subject<Button> {
 
-	protected Button(@Nonnull ItemStack display, @Nullable Consumer<ButtonAction> onClick) {
-		super(display);
-		this.onClick = onClick;
-	}
+    private final EventEmitter<Button> eventEmitter = new EventEmitter<>();
+    private ItemStack display;
 
-	@Override
-	public void onClick(@Nonnull ButtonAction action) {
-		if(onClick != null) onClick.accept(action);
-	}
+    protected Button(@Nonnull ItemStack display) {
+        this.display = requireNonNull(display);
+    }
 
-	public static Builder builder() {
-		return new Builder();
-	}
+    public ItemStack getDisplay() {
+        return display;
+    }
 
-	public static class Builder {
+    public void setDisplay(@Nonnull ItemStack display) {
+        this.display = display;
+        update();
+    }
 
-		private ItemStack display;
-		private String title;
-		private Collection<String> lore = Lists.newArrayList();
-		private Consumer<ButtonAction> onClick;
+    public void onClick(@Nonnull ButtonAction action) {
+    }
 
-		public Builder display(@Nonnull ItemStack display) {
-			this.display = display;
-			return this;
-		}
+    public void subscribe(@Nonnull Object observer, @Nonnull Consumer<Button> consumer) {
+        this.eventEmitter.subscribe(observer, consumer);
+    }
 
-		public Builder title(@Nullable String title) {
-			this.title = title;
-			return this;
-		}
+    public void unsubscribe(@Nonnull Object observer) {
+        this.eventEmitter.unsubscribe(observer);
+    }
 
-		public Builder lore(@Nullable Collection<String> lore) {
-			this.lore = (lore != null) ? lore : Lists.newArrayList();
-			return this;
-		}
-
-		public Builder onClick(@Nullable Consumer<ButtonAction> behaviour) {
-			this.onClick = behaviour;
-			return this;
-		}
-
-		public Builder onClick(@Nullable Runnable behaviour) {
-			if(behaviour != null) {
-				this.onClick = (action) -> behaviour.run();
-			}
-			else{
-				this.onClick = null;
-			}
-			return this;
-		}
-
-		public Button build() {
-			validate();
-			return new Button(buildDisplay(), onClick);
-		}
-
-		private void validate() {
-			if(display == null) throw new IllegalStateException("button display must be defined");
-		}
-
-		private ItemStack buildDisplay() {
-			if(title != null) display.setStackDisplayName(title);
-
-			if(!lore.isEmpty()) {
-				NBTTagList nbtLore = new NBTTagList();
-				for(String line : lore) {
-					//If a line in the lore is null, just ignore it.
-					if(line != null) {
-						nbtLore.appendTag(new NBTTagString(line));
-					}
-				}
-				display.getOrCreateSubCompound("display").setTag("Lore", nbtLore);
-			}
-			if(display.hasTagCompound()) {
-				display.getTagCompound().setString("tooltip", "");
-			}
-			return display;
-		}
-
-	}
+    public void update() {
+        this.eventEmitter.emit(this);
+    }
 
 }

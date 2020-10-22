@@ -1,20 +1,19 @@
 package ca.landonjw.gooeylibs.implementation;
 
 import ca.landonjw.gooeylibs.api.button.ButtonAction;
-import ca.landonjw.gooeylibs.api.page.IPage;
+import ca.landonjw.gooeylibs.api.page.Page;
 import ca.landonjw.gooeylibs.api.page.PageAction;
-import ca.landonjw.gooeylibs.api.template.ITemplate;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
 import ca.landonjw.gooeylibs.implementation.tasks.Task;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketOpenWindow;
 import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.NonNullList;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
@@ -24,62 +23,48 @@ import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
-import java.util.stream.Collectors;
 
 public class GooeyContainer extends Container {
 
 	private static final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
 	private final EntityPlayerMP player;
 
-	private IPage page;
-	private ITemplate template;
+	private Page page;
 
 	private long lastClickTick;
 	private boolean closing;
 
-	public GooeyContainer(@Nonnull EntityPlayerMP player, @Nonnull IPage page) {
+	public GooeyContainer(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
 		this.player = player;
 		this.windowId = 1;
 
 		this.page = page;
-
+		initializePage(page);
 		subscribeToPage(page);
-		subscribeToTemplateSlots(page.getTemplate());
+
 		MinecraftForge.EVENT_BUS.register(this);
 	}
 
-	private void subscribeToPage(IPage page) {
+	private void subscribeToPage(Page page) {
 		page.subscribe(this, (update) -> {
-			this.fillStacksToDisplay(update.getTemplate());
-			if (template != null) this.unsubscribeToTemplateSlots(this.template);
-			this.template = update.getTemplate();
-			this.subscribeToTemplateSlots(page.getTemplate());
-			this.refreshContainer();
+			initializePage(update);
+			refreshContainer();
 		});
 	}
 
-	private void unsubscribeToPage(IPage page) {
-		page.unsubscribe(this);
-		unsubscribeToTemplateSlots(page.getTemplate());
-	}
-
-	private void fillStacksToDisplay(ITemplate template) {
-		this.inventoryItemStacks = template.getSlots().stream()
-				.map(TemplateSlot::getStack)
-				.collect(Collectors.toCollection(NonNullList::create));
-	}
-
-	private void subscribeToTemplateSlots(@Nonnull ITemplate template) {
-		template.getSlots().forEach((slot) -> {
-			slot.subscribe(this, (update) -> {
-				SPacketSetSlot setSlot = new SPacketSetSlot(windowId, update.getSlotIndex(), update.getStack());
-				player.connection.sendPacket(setSlot);
-			});
+	private void initializePage(Page page) {
+		this.inventorySlots.forEach((slot) -> {
+			((TemplateSlot) slot).unsubscribe(this);
+		});
+		page.getTemplate().updateContainer(this);
+		this.inventorySlots.forEach((slot) -> {
+			((TemplateSlot) slot).subscribe(this, () -> updateSlot(slot));
 		});
 	}
 
-	private void unsubscribeToTemplateSlots(@Nonnull ITemplate template) {
-		template.getSlots().forEach((slot) -> slot.unsubscribe(this));
+	private void updateSlot(@Nonnull Slot slot) {
+		SPacketSetSlot setSlot = new SPacketSetSlot(windowId, slot.getSlotIndex(), slot.getStack());
+		player.connection.sendPacket(setSlot);
 	}
 
 	public void open() {
@@ -87,12 +72,9 @@ public class GooeyContainer extends Container {
 		player.openContainer = this;
 		player.currentWindowId = windowId;
 
-		this.fillStacksToDisplay(page.getTemplate());
-		this.inventorySlots.addAll(this.page.getTemplate().getSlots());
-
 		SPacketOpenWindow openWindow = new SPacketOpenWindow(
 				player.currentWindowId,
-				"minecraft:container",
+				page.getTemplate().getTemplateType().getID(),
 				new TextComponentString(page.getTitle()),
 				page.getTemplate().getSize()
 		);
@@ -132,14 +114,16 @@ public class GooeyContainer extends Container {
 		return ItemStack.EMPTY;
 	}
 
-	public IPage getPage() {
+	public Page getPage() {
 		return page;
 	}
 
-	public void setPage(IPage page) {
-		if(page != this.page) {
-			unsubscribeToPage(page);
+	public void setPage(Page page) {
+		if (page != this.page) {
+			this.page.unsubscribe(this);
 			this.page = page;
+
+			initializePage(page);
 			subscribeToPage(page);
 
 			refreshContainer();
@@ -151,7 +135,7 @@ public class GooeyContainer extends Container {
 	public void refreshContainer() {
 		SPacketOpenWindow openWindow = new SPacketOpenWindow(
 				player.currentWindowId,
-				"minecraft:container",
+				page.getTemplate().getTemplateType().getID(),
 				new TextComponentString(page.getTitle()),
 				page.getTemplate().getSize()
 		);
@@ -197,11 +181,12 @@ public class GooeyContainer extends Container {
 
 	@Override
 	public void onContainerClosed(EntityPlayer playerIn) {
-		if(closing) return;
+		if (closing) return;
 
 		closing = true;
 		page.onClose(new PageAction(player, page));
-		unsubscribeToPage(this.page);
+		page.unsubscribe(this);
+		this.inventorySlots.forEach((slot) -> ((TemplateSlot) slot).unsubscribe(this));
 		MinecraftForge.EVENT_BUS.unregister(this);
 	}
 

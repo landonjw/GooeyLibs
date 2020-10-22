@@ -1,6 +1,6 @@
 package ca.landonjw.gooeylibs.api.button;
 
-import ca.landonjw.gooeylibs.api.page.IPage;
+import ca.landonjw.gooeylibs.api.page.Page;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
 
@@ -11,13 +11,13 @@ public class ButtonAction {
 
 	private final EntityPlayerMP player;
 	private final ClickType clickType;
-	private final IButton button;
-	private final IPage page;
+	private final Button button;
+	private final Page page;
 
 	public ButtonAction(@Nonnull EntityPlayerMP player,
-	                    @Nonnull ClickType clickType,
-	                    @Nonnull IButton button,
-	                    @Nonnull IPage page) {
+						@Nonnull ClickType clickType,
+						@Nonnull Button button,
+						@Nonnull Page page) {
 		this.player = Objects.requireNonNull(player);
 		this.clickType = Objects.requireNonNull(clickType);
 		this.button = Objects.requireNonNull(button);
@@ -32,11 +32,11 @@ public class ButtonAction {
 		return clickType;
 	}
 
-	public IButton getButton() {
+	public Button getButton() {
 		return button;
 	}
 
-	public IPage getPage() {
+	public Page getPage() {
 		return page;
 	}
 
