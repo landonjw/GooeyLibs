@@ -3,7 +3,7 @@ package ca.landonjw.gooeylibs.implementation;
 import ca.landonjw.gooeylibs.api.UIManager;
 import ca.landonjw.gooeylibs.api.button.GooeyButton;
 import ca.landonjw.gooeylibs.api.page.GooeyPage;
-import ca.landonjw.gooeylibs.api.template.chest.ChestTemplate;
+import ca.landonjw.gooeylibs.api.template.types.BrewingStandTemplate;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -30,8 +30,20 @@ public class TestCommand extends CommandBase {
                 .title("Hello")
                 .build();
 
-        ChestTemplate template = ChestTemplate.builder(6)
-                .fill(button)
+        GooeyButton button2 = GooeyButton.builder()
+                .display(new ItemStack(Items.EMERALD))
+                .title("Hello")
+                .build();
+
+        GooeyButton button3 = GooeyButton.builder()
+                .display(new ItemStack(Items.GOLD_INGOT))
+                .title("Hello")
+                .build();
+
+        BrewingStandTemplate template = BrewingStandTemplate.builder()
+                .bottles(button)
+                .fuel(button2)
+                .ingredient(button3)
                 .build();
 
         GooeyPage page = GooeyPage.builder()

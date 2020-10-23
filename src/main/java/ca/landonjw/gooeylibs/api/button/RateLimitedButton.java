@@ -7,7 +7,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 
-public class RateLimitedButton extends Button {
+public class RateLimitedButton extends ButtonBase {
 
     private final Button button;
     private final int limit;
@@ -50,12 +50,12 @@ public class RateLimitedButton extends Button {
 
     public static class Builder {
 
-        private Button button;
+        private ButtonBase button;
         private int limit;
         private long timeInterval;
         private TimeUnit timeUnit;
 
-        public Builder button(Button button) {
+        public Builder button(ButtonBase button) {
             this.button = button;
             return this;
         }

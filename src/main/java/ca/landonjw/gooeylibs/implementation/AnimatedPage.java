@@ -1,9 +1,10 @@
 package ca.landonjw.gooeylibs.implementation;
 
 import ca.landonjw.gooeylibs.api.button.GooeyButton;
+import ca.landonjw.gooeylibs.api.data.UpdateEmitter;
 import ca.landonjw.gooeylibs.api.page.Page;
 import ca.landonjw.gooeylibs.api.template.Template;
-import ca.landonjw.gooeylibs.api.template.chest.ChestTemplate;
+import ca.landonjw.gooeylibs.api.template.types.ChestTemplate;
 import ca.landonjw.gooeylibs.implementation.tasks.Task;
 import com.google.common.collect.Lists;
 import net.minecraft.init.Blocks;
@@ -13,8 +14,9 @@ import net.minecraft.item.ItemStack;
 
 import java.util.List;
 
-public class AnimatedPage extends Page {
+public class AnimatedPage extends UpdateEmitter<Page> implements Page {
 
+    private final Template template;
     private final List<Integer> animationIndexes = Lists.newArrayList();
     private int frameIndex;
 
@@ -27,11 +29,9 @@ public class AnimatedPage extends Page {
             .build();
 
     public AnimatedPage() {
-        Template template = ChestTemplate.builder(6)
+        this.template = ChestTemplate.builder(6)
                 .fill(filler)
                 .build();
-        setTemplate(template);
-        setTitle("Animated Page");
 
         fillAnimationIndexes();
         startAnimation();
@@ -54,6 +54,16 @@ public class AnimatedPage extends Page {
                 .infinite()
                 .interval(20)
                 .build();
+    }
+
+    @Override
+    public Template getTemplate() {
+        return template;
+    }
+
+    @Override
+    public String getTitle() {
+        return "Animated Page";
     }
 
 }

@@ -1,4 +1,4 @@
-package ca.landonjw.gooeylibs.api.template.chest;
+package ca.landonjw.gooeylibs.api.template.types;
 
 import ca.landonjw.gooeylibs.api.button.Button;
 import ca.landonjw.gooeylibs.api.template.Template;

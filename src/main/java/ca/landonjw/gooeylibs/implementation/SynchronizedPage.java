@@ -1,17 +1,19 @@
 package ca.landonjw.gooeylibs.implementation;
 
 import ca.landonjw.gooeylibs.api.button.GooeyButton;
+import ca.landonjw.gooeylibs.api.data.UpdateEmitter;
 import ca.landonjw.gooeylibs.api.page.Page;
 import ca.landonjw.gooeylibs.api.template.Template;
-import ca.landonjw.gooeylibs.api.template.chest.ChestTemplate;
+import ca.landonjw.gooeylibs.api.template.types.ChestTemplate;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.TextFormatting;
 
-public class SynchronizedPage extends Page {
+public class SynchronizedPage extends UpdateEmitter<Page> implements Page {
 
-    private boolean active = false;
+    private final ChestTemplate template;
+    private String title;
 
     private final GooeyButton setInactiveButton = GooeyButton.builder()
             .display(new ItemStack(Blocks.WOOL, 1, EnumDyeColor.RED.getMetadata()))
@@ -30,19 +32,26 @@ public class SynchronizedPage extends Page {
                 .display(new ItemStack(Blocks.STAINED_GLASS_PANE, 1, EnumDyeColor.GRAY.getMetadata()))
                 .build();
 
-        Template template = ChestTemplate.builder(6)
+        this.template = ChestTemplate.builder(6)
                 .fill(filler)
-                .set(3, 4, setActiveButton)
                 .build();
-        setTemplate(template);
-        setTitle(TextFormatting.RED + "Inactive Page!");
+        setActive(false);
     }
 
     private void setActive(boolean state) {
-        this.active = state;
-        ((ChestTemplate) getTemplate()).getSlot(3, 4).setButton((state) ? setInactiveButton : setActiveButton);
-        setTitle(active ? TextFormatting.GREEN + "Active Page!" : TextFormatting.RED + "Inactive Page!");
+        template.getSlot(3, 4).setButton((state) ? setInactiveButton : setActiveButton);
+        this.title = state ? TextFormatting.GREEN + "Active Page!" : TextFormatting.RED + "Inactive Page!";
         update();
+    }
+
+    @Override
+    public Template getTemplate() {
+        return template;
+    }
+
+    @Override
+    public String getTitle() {
+        return title;
     }
 
 }

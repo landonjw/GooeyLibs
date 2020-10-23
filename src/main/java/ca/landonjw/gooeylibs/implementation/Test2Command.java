@@ -3,7 +3,7 @@ package ca.landonjw.gooeylibs.implementation;
 import ca.landonjw.gooeylibs.api.UIManager;
 import ca.landonjw.gooeylibs.api.button.GooeyButton;
 import ca.landonjw.gooeylibs.api.page.GooeyPage;
-import ca.landonjw.gooeylibs.api.template.chest.FurnaceTemplate;
+import ca.landonjw.gooeylibs.api.template.types.FurnaceTemplate;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -41,10 +41,6 @@ public class Test2Command extends CommandBase {
                 .display(new ItemStack(Items.GOLD_INGOT))
                 .title("Hello")
                 .build();
-
-//        ChestTemplate template = ChestTemplate.builder(6)
-//                .fill(button)
-//                .build();
 
         FurnaceTemplate template = FurnaceTemplate.builder()
                 .inputMaterial(button1)

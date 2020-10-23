@@ -10,7 +10,7 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-public class GooeyButton extends Button {
+public class GooeyButton extends ButtonBase {
 
     private final Consumer<ButtonAction> onClick;
 

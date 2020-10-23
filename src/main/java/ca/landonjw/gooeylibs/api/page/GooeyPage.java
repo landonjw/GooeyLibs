@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
-public class GooeyPage extends Page {
+public class GooeyPage extends PageBase {
 
     private final Consumer<PageAction> onOpen, onClose;
 
