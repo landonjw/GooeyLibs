@@ -2,12 +2,13 @@ package ca.landonjw.gooeylibs.api.template;
 
 import ca.landonjw.gooeylibs.api.data.UpdateEmitter;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
-import ca.landonjw.gooeylibs.implementation.GooeyContainer;
 import com.google.common.collect.Lists;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public abstract class Template extends UpdateEmitter<Template> {
 
@@ -41,9 +42,14 @@ public abstract class Template extends UpdateEmitter<Template> {
         return slots.get(index);
     }
 
-    public final void updateContainer(@Nonnull GooeyContainer container) {
-        container.inventorySlots = Lists.newArrayList(this.slots);
-        container.inventoryItemStacks = displayStacks;
+    public final List<Slot> getSlots() {
+        return Lists.newArrayList(slots);
+    }
+
+    public final NonNullList<ItemStack> getDisplayStacks() {
+        NonNullList<ItemStack> copy = NonNullList.create();
+        displayStacks.forEach(copy::add);
+        return copy;
     }
 
 }

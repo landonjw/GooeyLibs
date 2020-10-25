@@ -1,4 +1,4 @@
-package ca.landonjw.gooeylibs.implementation;
+package ca.landonjw.gooeylibs.commands;
 
 import ca.landonjw.gooeylibs.api.UIManager;
 import net.minecraft.command.CommandBase;

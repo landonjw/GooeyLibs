@@ -4,7 +4,7 @@ import ca.landonjw.gooeylibs.api.button.ButtonAction;
 import ca.landonjw.gooeylibs.api.page.Page;
 import ca.landonjw.gooeylibs.api.page.PageAction;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
-import ca.landonjw.gooeylibs.implementation.tasks.Task;
+import ca.landonjw.gooeylibs.api.template.types.InventoryTemplate;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
@@ -16,11 +16,7 @@ import net.minecraft.network.play.server.SPacketSetSlot;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.entity.player.EntityItemPickupEvent;
 import net.minecraftforge.fml.common.FMLCommonHandler;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import javax.annotation.Nonnull;
 
@@ -30,6 +26,7 @@ public class GooeyContainer extends Container {
 	private final EntityPlayerMP player;
 
 	private Page page;
+	public InventoryTemplate inventoryTemplate;
 
 	private long lastClickTick;
 	private boolean closing;
@@ -56,10 +53,29 @@ public class GooeyContainer extends Container {
 		this.inventorySlots.forEach((slot) -> {
 			((TemplateSlot) slot).unsubscribe(this);
 		});
-		page.getTemplate().updateContainer(this);
+		if (inventoryTemplate != null) {
+			for (int i = 0; i < inventoryTemplate.getSize(); i++) {
+				inventoryTemplate.getSlot(i).unsubscribe(this);
+			}
+		}
+		this.inventorySlots = page.getTemplate().getSlots();
+		this.inventoryItemStacks = page.getTemplate().getDisplayStacks();
+		this.inventoryTemplate = page.getInventoryTemplate().orElse(null);
 		this.inventorySlots.forEach((slot) -> {
 			((TemplateSlot) slot).subscribe(this, () -> updateSlot(slot));
 		});
+		if (inventoryTemplate != null) {
+			for (int i = 0; i < inventoryTemplate.getSize(); i++) {
+				int index = i;
+				inventoryTemplate.getSlot(i).subscribe(this, () -> updatePlayerInventorySlot(index));
+			}
+		}
+	}
+
+	private void updatePlayerInventorySlot(int index) {
+		ItemStack stack = inventoryTemplate.getDisplayForSlot(player, index);
+		SPacketSetSlot setSlot = new SPacketSetSlot(windowId, this.inventorySlots.size() + index, stack);
+		player.connection.sendPacket(setSlot);
 	}
 
 	private void updateSlot(@Nonnull Slot slot) {
@@ -110,6 +126,14 @@ public class GooeyContainer extends Container {
 			page.getTemplate().getSlot(slot).getButton().ifPresent((button) -> {
 				button.onClick(new ButtonAction(player, clickType, button, page));
 			});
+		} else {
+			if (slot != -999) {
+				page.getInventoryTemplate().ifPresent(template -> {
+					template.getSlot(slot - inventorySlots.size()).getButton().ifPresent(button -> {
+						button.onClick(new ButtonAction(player, clickType, button, page));
+					});
+				});
+			}
 		}
 		return ItemStack.EMPTY;
 	}
@@ -151,7 +175,11 @@ public class GooeyContainer extends Container {
 		 * gets items added to their inventory while in the user interface.
 		 */
 		player.inventoryContainer.detectAndSendChanges();
-		player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+		if (inventoryTemplate != null) {
+			player.sendAllContents(player.inventoryContainer, inventoryTemplate.getFullDisplay(player));
+		} else {
+			player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+		}
 	}
 
 	private void clearPlayersCursor() {
@@ -166,8 +194,13 @@ public class GooeyContainer extends Container {
 		if(slot >= page.getTemplate().getSize()) {
 			//First 0-7 slots contain player's armor, hand slots, etc. So we offset for the inventory UI slots.
 			int PLAYER_INVENTORY_SLOT_OFFSET = 9;
-			int targetedPlayerSlotIndex = slot - page.getTemplate().getSize() + PLAYER_INVENTORY_SLOT_OFFSET;
-			return player.inventoryContainer.getSlot(targetedPlayerSlotIndex).getStack();
+			int targetedPlayerSlotIndex = slot - page.getTemplate().getSize();
+
+			if (inventoryTemplate != null) {
+				return inventoryTemplate.getDisplayForSlot(player, targetedPlayerSlotIndex);
+			} else {
+				return player.inventoryContainer.getSlot(targetedPlayerSlotIndex).getStack();
+			}
 		}
 		else {
 			return page.getTemplate().getSlot(slot).getStack();
@@ -187,18 +220,15 @@ public class GooeyContainer extends Container {
 		page.onClose(new PageAction(player, page));
 		page.unsubscribe(this);
 		this.inventorySlots.forEach((slot) -> ((TemplateSlot) slot).unsubscribe(this));
-		MinecraftForge.EVENT_BUS.unregister(this);
-	}
-
-	@SubscribeEvent(priority = EventPriority.LOWEST)
-	public void onPickup(EntityItemPickupEvent event) {
-		if(!event.getEntity().equals(player)) return;
-
-		if(event.getResult() != Event.Result.DENY && !event.isCanceled()) {
-			Task.builder().execute(this::updateAllContainerContents)
-					.delay(1)
-					.build();
+		if (inventoryTemplate != null) {
+			for (int i = 0; i < inventoryTemplate.getSize(); i++) {
+				inventoryTemplate.getSlot(i).unsubscribe(this);
+			}
 		}
+		MinecraftForge.EVENT_BUS.unregister(this);
+
+		player.inventoryContainer.detectAndSendChanges();
+		player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
 	}
 
 }

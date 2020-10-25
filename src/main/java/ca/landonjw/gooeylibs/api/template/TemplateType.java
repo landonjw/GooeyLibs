@@ -7,9 +7,7 @@ public enum TemplateType {
     FURNACE("minecraft:furnace"),
     BREWING_STAND("minecraft:brewing_stand"),
     HOPPER("minecraft:hopper"),
-    DISPENSOR("minecraft:dispensor"),
-    CRAFTING_TABLE("minecraft:crafting_table"),
-    ANVIL("minecraft:anvil");
+    DISPENSER("minecraft:dispenser");
 
     private final String id;
 

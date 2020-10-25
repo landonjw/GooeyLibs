@@ -53,7 +53,7 @@ public class FurnaceTemplate extends Template {
             return new FurnaceTemplate(toSlots());
         }
 
-        private TemplateSlot[] toSlots() {
+        protected TemplateSlot[] toSlots() {
             TemplateSlot[] slots = new TemplateSlot[3];
             for (int i = 0; i < 3; i++) {
                 slots[i] = new TemplateSlot(buttons[i], i, 0, 0);

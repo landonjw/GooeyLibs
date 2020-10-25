@@ -156,9 +156,9 @@ public class ChestTemplate extends Template {
             return new ChestTemplate(toSlots());
         }
 
-        private TemplateSlot[] toSlots() {
+        protected TemplateSlot[] toSlots() {
             TemplateSlot[] slots = new TemplateSlot[buttons.length];
-            for(int i = 0; i < buttons.length; i++){
+            for (int i = 0; i < buttons.length; i++) {
                 int row = i / 9;
                 int col = i % 9;
 

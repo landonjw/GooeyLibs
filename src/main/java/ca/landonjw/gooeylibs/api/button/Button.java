@@ -9,6 +9,7 @@ public interface Button extends Subject<Button> {
 
     ItemStack getDisplay();
 
-    void onClick(@Nonnull ButtonAction action);
+    default void onClick(@Nonnull ButtonAction action) {
+    }
 
 }

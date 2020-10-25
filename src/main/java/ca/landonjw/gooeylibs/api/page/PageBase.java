@@ -2,19 +2,25 @@ package ca.landonjw.gooeylibs.api.page;
 
 import ca.landonjw.gooeylibs.api.data.EventEmitter;
 import ca.landonjw.gooeylibs.api.template.Template;
+import ca.landonjw.gooeylibs.api.template.types.InventoryTemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public abstract class PageBase implements Page {
 
     private final EventEmitter<Page> eventEmitter = new EventEmitter<>();
     private Template template;
+    private InventoryTemplate inventoryTemplate;
     private String title;
 
-    public PageBase(@Nonnull Template template, @Nullable String title) {
+    public PageBase(@Nonnull Template template,
+                    @Nullable InventoryTemplate inventoryTemplate,
+                    @Nullable String title) {
         this.template = template;
+        this.inventoryTemplate = inventoryTemplate;
         this.title = (title != null) ? title : "";
     }
 
@@ -26,6 +32,15 @@ public abstract class PageBase implements Page {
     public void setTemplate(@Nonnull Template template) {
         this.template = template;
         update();
+    }
+
+    @Override
+    public Optional<InventoryTemplate> getInventoryTemplate() {
+        return Optional.ofNullable(inventoryTemplate);
+    }
+
+    public void setPlayerInventoryTemplate(@Nullable InventoryTemplate inventoryTemplate) {
+        this.inventoryTemplate = inventoryTemplate;
     }
 
     public String getTitle() {

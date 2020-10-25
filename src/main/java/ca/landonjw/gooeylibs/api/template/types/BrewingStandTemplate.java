@@ -59,7 +59,7 @@ public class BrewingStandTemplate extends Template {
             return new BrewingStandTemplate(toSlots());
         }
 
-        private TemplateSlot[] toSlots() {
+        protected TemplateSlot[] toSlots() {
             TemplateSlot[] slots = new TemplateSlot[5];
             for (int i = 0; i < 5; i++) {
                 slots[i] = new TemplateSlot(buttons[i], i, 0, 0);

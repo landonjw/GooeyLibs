@@ -1,6 +1,7 @@
 package ca.landonjw.gooeylibs.api.page;
 
 import ca.landonjw.gooeylibs.api.template.Template;
+import ca.landonjw.gooeylibs.api.template.types.InventoryTemplate;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,8 +11,12 @@ public class GooeyPage extends PageBase {
 
     private final Consumer<PageAction> onOpen, onClose;
 
-    public GooeyPage(@Nonnull Template template, @Nullable String title, @Nullable Consumer<PageAction> onOpen, @Nullable Consumer<PageAction> onClose) {
-        super(template, title);
+    public GooeyPage(@Nonnull Template template,
+                     @Nullable InventoryTemplate inventoryTemplate,
+                     @Nullable String title,
+                     @Nullable Consumer<PageAction> onOpen,
+                     @Nullable Consumer<PageAction> onClose) {
+        super(template, inventoryTemplate, title);
         this.onOpen = onOpen;
         this.onClose = onClose;
     }
@@ -34,6 +39,7 @@ public class GooeyPage extends PageBase {
 
         private String title;
         private Template template;
+        private InventoryTemplate inventoryTemplate;
         private Consumer<PageAction> onOpen, onClose;
 
         public Builder title(@Nullable String title) {
@@ -43,6 +49,11 @@ public class GooeyPage extends PageBase {
 
         public Builder template(@Nonnull Template template) {
             this.template = template;
+            return this;
+        }
+
+        public Builder inventory(@Nullable InventoryTemplate template) {
+            this.inventoryTemplate = template;
             return this;
         }
 
@@ -76,7 +87,7 @@ public class GooeyPage extends PageBase {
 
         public GooeyPage build() {
             if (template == null) throw new IllegalStateException("template must be defined");
-            return new GooeyPage(template, title, onOpen, onClose);
+            return new GooeyPage(template, inventoryTemplate, title, onOpen, onClose);
         }
 
     }

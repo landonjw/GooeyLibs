@@ -1,9 +1,7 @@
 package ca.landonjw.gooeylibs;
 
-import ca.landonjw.gooeylibs.implementation.AnimatedCommand;
-import ca.landonjw.gooeylibs.implementation.SynchronizedCommand;
-import ca.landonjw.gooeylibs.implementation.Test2Command;
-import ca.landonjw.gooeylibs.implementation.TestCommand;
+import ca.landonjw.gooeylibs.commands.*;
+import ca.landonjw.gooeylibs.commands.shooter.ShooterCommand;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
@@ -35,6 +33,9 @@ public class GooeyLibs {
 		event.registerServerCommand(new Test2Command());
 		event.registerServerCommand(new SynchronizedCommand());
 		event.registerServerCommand(new AnimatedCommand());
+		event.registerServerCommand(new SnakeCommand());
+		event.registerServerCommand(new RateLimitPageCommand());
+		event.registerServerCommand(new ShooterCommand());
 	}
 
 }

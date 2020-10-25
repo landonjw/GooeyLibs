@@ -1,31 +1,27 @@
-package ca.landonjw.gooeylibs.implementation;
+package ca.landonjw.gooeylibs.commands;
 
 import ca.landonjw.gooeylibs.api.UIManager;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
-public class AnimatedCommand extends CommandBase {
-
-    private final AnimatedPage page;
-
-    public AnimatedCommand() {
-        this.page = new AnimatedPage();
-    }
+public class RateLimitPageCommand extends CommandBase {
 
     @Override
     public String getName() {
-        return "animinv";
+        return "ratelimit";
     }
 
     @Override
     public String getUsage(ICommandSender sender) {
-        return "/animinv";
+        return "/ratelimit";
     }
 
     @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
+    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
+        RateLimitPage page = new RateLimitPage();
         UIManager.openUIForcefully((EntityPlayerMP) sender, page);
     }
 

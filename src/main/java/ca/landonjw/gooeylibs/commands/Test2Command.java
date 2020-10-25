@@ -1,9 +1,9 @@
-package ca.landonjw.gooeylibs.implementation;
+package ca.landonjw.gooeylibs.commands;
 
 import ca.landonjw.gooeylibs.api.UIManager;
 import ca.landonjw.gooeylibs.api.button.GooeyButton;
 import ca.landonjw.gooeylibs.api.page.GooeyPage;
-import ca.landonjw.gooeylibs.api.template.types.FurnaceTemplate;
+import ca.landonjw.gooeylibs.api.template.types.HopperTemplate;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -13,7 +13,7 @@ import net.minecraft.server.MinecraftServer;
 
 public class Test2Command extends CommandBase {
 
-    private int index = 0;
+    private final int index = 0;
 
     @Override
     public String getName() {
@@ -42,10 +42,12 @@ public class Test2Command extends CommandBase {
                 .title("Hello")
                 .build();
 
-        FurnaceTemplate template = FurnaceTemplate.builder()
-                .inputMaterial(button1)
-                .fuel(button2)
-                .outputMaterial(button3)
+        HopperTemplate template = HopperTemplate.builder()
+                .set(0, button1)
+                .set(1, button2)
+                .set(2, button3)
+                .set(3, button1)
+                .set(4, button2)
                 .build();
 
         GooeyPage page = GooeyPage.builder()
