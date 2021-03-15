@@ -3,6 +3,7 @@ package ca.landonjw.gooeylibs.implementation;
 import ca.landonjw.gooeylibs.api.button.ButtonAction;
 import ca.landonjw.gooeylibs.api.page.Page;
 import ca.landonjw.gooeylibs.api.page.PageAction;
+import ca.landonjw.gooeylibs.api.template.TemplateType;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
 import ca.landonjw.gooeylibs.api.template.types.InventoryTemplate;
 import net.minecraft.entity.player.EntityPlayer;
@@ -88,12 +89,21 @@ public class GooeyContainer extends Container {
 		player.openContainer = this;
 		player.currentWindowId = windowId;
 
-		SPacketOpenWindow openWindow = new SPacketOpenWindow(
-				player.currentWindowId,
-				page.getTemplate().getTemplateType().getID(),
-				new TextComponentString(page.getTitle()),
-				page.getTemplate().getSize()
-		);
+		SPacketOpenWindow openWindow;
+		if (page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE) {
+			openWindow = new SPacketOpenWindow(
+					player.currentWindowId,
+					page.getTemplate().getTemplateType().getID(),
+					new TextComponentString(page.getTitle())
+			);
+		} else {
+			openWindow = new SPacketOpenWindow(
+					player.currentWindowId,
+					page.getTemplate().getTemplateType().getID(),
+					new TextComponentString(page.getTitle()),
+					page.getTemplate().getSize()
+			);
+		}
 		player.connection.sendPacket(openWindow);
 
 		updateAllContainerContents();
@@ -194,12 +204,13 @@ public class GooeyContainer extends Container {
 		if(slot >= page.getTemplate().getSize()) {
 			//First 0-7 slots contain player's armor, hand slots, etc. So we offset for the inventory UI slots.
 			int PLAYER_INVENTORY_SLOT_OFFSET = 9;
+
 			int targetedPlayerSlotIndex = slot - page.getTemplate().getSize();
 
 			if (inventoryTemplate != null) {
 				return inventoryTemplate.getDisplayForSlot(player, targetedPlayerSlotIndex);
 			} else {
-				return player.inventoryContainer.getSlot(targetedPlayerSlotIndex).getStack();
+				return player.inventoryContainer.getSlot(targetedPlayerSlotIndex + PLAYER_INVENTORY_SLOT_OFFSET).getStack();
 			}
 		}
 		else {

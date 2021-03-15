@@ -1,9 +1,6 @@
 package ca.landonjw.gooeylibs;
 
-import ca.landonjw.gooeylibs.commands.*;
-import ca.landonjw.gooeylibs.commands.shooter.ShooterCommand;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(
 		modid = GooeyLibs.MOD_ID,
@@ -26,16 +23,5 @@ public class GooeyLibs {
 	 * The version of the library.
 	 */
 	public static final String VERSION = "2.0.0";
-
-	@Mod.EventHandler
-	public void serverStarting(FMLServerStartingEvent event) {
-		event.registerServerCommand(new TestCommand());
-		event.registerServerCommand(new Test2Command());
-		event.registerServerCommand(new SynchronizedCommand());
-		event.registerServerCommand(new AnimatedCommand());
-		event.registerServerCommand(new SnakeCommand());
-		event.registerServerCommand(new RateLimitPageCommand());
-		event.registerServerCommand(new ShooterCommand());
-	}
 
 }
