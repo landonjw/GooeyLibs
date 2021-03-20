@@ -3,18 +3,20 @@ package ca.landonjw.gooeylibs.api.button;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
+import java.util.function.Consumer;
 
-public class InventoryListenerButton extends PlaceholderButton {
+public class InventoryListenerButton extends ButtonBase {
 
-    public InventoryListenerButton(@Nonnull Button button) {
-        super(button);
+    private final Consumer<ButtonAction> onClick;
+
+    public InventoryListenerButton(Consumer<ButtonAction> onClick) {
+        super(ItemStack.EMPTY);
+        this.onClick = onClick;
     }
 
-    public InventoryListenerButton() {
-        super(GooeyButton.builder()
-                .display(ItemStack.EMPTY)
-                .build()
-        );
+    @Override
+    public void onClick(@Nonnull ButtonAction action) {
+        onClick.accept(action);
     }
 
 }
