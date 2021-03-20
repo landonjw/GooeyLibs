@@ -76,14 +76,14 @@ public class ChestTemplate extends Template {
                 if (startRow < 0 || startRow > rows) return this;
 
                 int endCol = startCol + length;
-                for (int col = Math.min(0, startCol); col < Math.max(COLUMNS, endCol); col++) {
+                for (int col = Math.max(0, startCol); col <= Math.min(COLUMNS, endCol); col++) {
                     set(startRow, col, button);
                 }
             } else {
                 if (startCol < 0 || startCol > COLUMNS) return this;
 
                 int endRow = startRow + length;
-                for(int row = Math.min(0, startRow); row < Math.max(rows, endRow); row++) {
+                for (int row = Math.max(0, startRow); row <= Math.min(rows, endRow); row++) {
                     set(row, startCol, button);
                 }
             }
