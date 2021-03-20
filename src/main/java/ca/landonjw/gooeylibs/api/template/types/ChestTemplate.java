@@ -125,7 +125,7 @@ public class ChestTemplate extends Template {
             return this;
         }
 
-        public Builder checker(int startRow, int startCol, int length, int width, @Nullable Button button) {
+        public Builder checker(int startRow, int startCol, int length, int width, @Nullable Button button, @Nullable Button button2) {
             startRow = Math.max(0, startRow);
             startCol = Math.max(0, startCol);
             int endRow = Math.min(rows, startRow + length);
@@ -135,6 +135,8 @@ public class ChestTemplate extends Template {
                 for (int col = startCol; col < endCol; col++) {
                     if (row - col == 0 || (row - col) % 2 == 0) {
                         set(row, col, button);
+                    } else {
+                        set(row, col, button2);
                     }
                 }
             }
