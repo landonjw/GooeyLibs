@@ -58,7 +58,7 @@ public final class InventoryTemplate extends ChestTemplate {
         }
 
         public Builder row(int row, @Nullable Button button) {
-            super.set(row, button);
+            super.row(row, button);
             return this;
         }
 

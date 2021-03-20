@@ -48,6 +48,9 @@ public class GooeyPage extends PageBase {
         }
 
         public Builder template(@Nonnull Template template) {
+            if (template instanceof InventoryTemplate) {
+                throw new IllegalArgumentException("you can not use an inventory template here!");
+            }
             this.template = template;
             return this;
         }
