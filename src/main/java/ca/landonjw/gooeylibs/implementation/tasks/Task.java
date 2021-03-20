@@ -80,6 +80,11 @@ public class Task {
 			return this;
 		}
 
+		public TaskBuilder execute(@Nonnull Consumer<Task> consumer) {
+			this.consumer = consumer;
+			return this;
+		}
+
 		public TaskBuilder delay(long delay) {
 			if (delay < 0) {
 				throw new IllegalArgumentException("delay must not be below 0");

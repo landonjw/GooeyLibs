@@ -9,13 +9,23 @@ import net.minecraft.network.play.server.SPacketCloseWindow;
 import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
 
 import javax.annotation.Nonnull;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class UIManager {
 
-	public static void openUIPassively(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
+	public static void openUIPassively(@Nonnull EntityPlayerMP player, @Nonnull Page page, long timeout, TimeUnit timeoutUnit) {
+		AtomicLong timeOutTicks = new AtomicLong(timeoutUnit.convert(timeout, TimeUnit.SECONDS) * 20);
 		Task.builder()
-				.execute(() -> openUIForcefully(player, page))
-				.delay(1)
+				.execute((task) -> {
+					timeOutTicks.getAndDecrement();
+					if (player.openContainer == player.inventoryContainer || timeOutTicks.get() <= 0) {
+						openUIForcefully(player, page);
+						task.setExpired();
+					}
+				})
+				.infinite()
+				.interval(1)
 				.build();
 	}
 
