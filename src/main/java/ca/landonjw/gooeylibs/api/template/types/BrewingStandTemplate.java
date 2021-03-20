@@ -36,17 +36,17 @@ public class BrewingStandTemplate extends Template {
         private final Button[] buttons = new Button[5];
 
         public Builder fuel(@Nullable Button button) {
-            this.buttons[0] = button;
+            this.buttons[4] = button;
             return this;
         }
 
         public Builder ingredient(@Nullable Button button) {
-            this.buttons[1] = button;
+            this.buttons[3] = button;
             return this;
         }
 
         public Builder bottle(int index, @Nullable Button button) {
-            if (index >= 0 && index < 3) this.buttons[index + 2] = button;
+            if (index >= 0 && index < 3) this.buttons[index] = button;
             return this;
         }
 
