@@ -13,6 +13,14 @@ public class PlaceholderButton implements Button {
         this.button = button;
     }
 
+    public PlaceholderButton() {
+        this(
+                GooeyButton.builder()
+                        .display(ItemStack.EMPTY)
+                        .build()
+        );
+    }
+
     public static PlaceholderButton of(@Nonnull Button button) {
         return new PlaceholderButton(button);
     }
