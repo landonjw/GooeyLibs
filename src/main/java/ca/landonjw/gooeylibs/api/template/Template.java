@@ -46,6 +46,8 @@ public abstract class Template extends UpdateEmitter<Template> {
         return Lists.newArrayList(slots);
     }
 
+    public abstract Template clone();
+
     public final NonNullList<ItemStack> getDisplayStacks() {
         NonNullList<ItemStack> copy = NonNullList.create();
         displayStacks.forEach(copy::add);

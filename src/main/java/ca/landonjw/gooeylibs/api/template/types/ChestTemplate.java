@@ -27,6 +27,19 @@ public class ChestTemplate extends Template {
         return new Builder(rows);
     }
 
+    @Override
+    public ChestTemplate clone() {
+        TemplateSlot[] clonedSlots = new TemplateSlot[getSize()];
+        for (int i = 0; i < getSize(); i++) {
+            int row = i / 9;
+            int col = i % 9;
+
+            Button button = getSlot(i).getButton().orElse(null);
+            clonedSlots[i] = new TemplateSlot(button, col + row * 9, 8 + col * 18, 18 + row * 18);
+        }
+        return new ChestTemplate(clonedSlots);
+    }
+
     public static class Builder {
 
         private final int COLUMNS = 9;
@@ -75,14 +88,14 @@ public class ChestTemplate extends Template {
             if (lineType == LineType.HORIZONTAL) {
                 if (startRow < 0 || startRow > rows) return this;
 
-                int endCol = startCol + length;
+                int endCol = startCol + length - 1;
                 for (int col = Math.max(0, startCol); col <= Math.min(COLUMNS, endCol); col++) {
                     set(startRow, col, button);
                 }
             } else {
                 if (startCol < 0 || startCol > COLUMNS) return this;
 
-                int endRow = startRow + length;
+                int endRow = startRow + length - 1;
                 for (int row = Math.max(0, startRow); row <= Math.min(rows, endRow); row++) {
                     set(row, startCol, button);
                 }

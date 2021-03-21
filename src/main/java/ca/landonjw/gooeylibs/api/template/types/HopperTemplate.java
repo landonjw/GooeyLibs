@@ -18,6 +18,16 @@ public class HopperTemplate extends Template {
         return new Builder();
     }
 
+    @Override
+    public HopperTemplate clone() {
+        TemplateSlot[] clonedSlots = new TemplateSlot[getSize()];
+        for (int i = 0; i < getSize(); i++) {
+            Button button = getSlot(i).getButton().orElse(null);
+            clonedSlots[i] = new TemplateSlot(button, i, 0, 0);
+        }
+        return new HopperTemplate(clonedSlots);
+    }
+
     public static class Builder {
 
         private final Button[] buttons = new Button[5];

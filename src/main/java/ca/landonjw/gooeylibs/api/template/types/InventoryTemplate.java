@@ -26,6 +26,19 @@ public final class InventoryTemplate extends ChestTemplate {
         }
     }
 
+    @Override
+    public InventoryTemplate clone() {
+        TemplateSlot[] clonedSlots = new TemplateSlot[getSize()];
+        for (int i = 0; i < getSize(); i++) {
+            int row = i / 9;
+            int col = i % 9;
+
+            Button button = getSlot(i).getButton().orElse(null);
+            clonedSlots[i] = new TemplateSlot(button, col + row * 9, 8 + col * 18, 18 + row * 18);
+        }
+        return new InventoryTemplate(clonedSlots);
+    }
+
     public NonNullList<ItemStack> getFullDisplay(@Nonnull EntityPlayerMP player) {
         NonNullList<ItemStack> displays = NonNullList.create();
 

@@ -31,6 +31,16 @@ public class BrewingStandTemplate extends Template {
         return new Builder();
     }
 
+    @Override
+    public BrewingStandTemplate clone() {
+        TemplateSlot[] clonedSlots = new TemplateSlot[getSize()];
+        for (int i = 0; i < getSize(); i++) {
+            Button button = getSlot(i).getButton().orElse(null);
+            clonedSlots[i] = new TemplateSlot(button, i, 0, 0);
+        }
+        return new BrewingStandTemplate(clonedSlots);
+    }
+
     public static class Builder {
 
         private final Button[] buttons = new Button[5];
