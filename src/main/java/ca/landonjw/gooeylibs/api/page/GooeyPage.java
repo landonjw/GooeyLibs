@@ -37,10 +37,10 @@ public class GooeyPage extends PageBase {
 
     public static class Builder {
 
-        private String title;
-        private Template template;
-        private InventoryTemplate inventoryTemplate;
-        private Consumer<PageAction> onOpen, onClose;
+        protected String title;
+        protected Template template;
+        protected InventoryTemplate inventoryTemplate;
+        protected Consumer<PageAction> onOpen, onClose;
 
         public Builder title(@Nullable String title) {
             this.title = title;
@@ -89,8 +89,14 @@ public class GooeyPage extends PageBase {
         }
 
         public GooeyPage build() {
-            if (template == null) throw new IllegalStateException("template must be defined");
+            validate();
             return new GooeyPage(template, inventoryTemplate, title, onOpen, onClose);
+        }
+
+        protected void validate() {
+            if (template == null) {
+                throw new IllegalStateException("template must be defined");
+            }
         }
 
     }

@@ -30,10 +30,10 @@ public class GooeyButton extends ButtonBase {
 
     public static class Builder {
 
-        private ItemStack display;
-        private String title;
-        private Collection<String> lore = Lists.newArrayList();
-        private Consumer<ButtonAction> onClick;
+        protected ItemStack display;
+        protected String title;
+        protected Collection<String> lore = Lists.newArrayList();
+        protected Consumer<ButtonAction> onClick;
 
         public Builder display(@Nonnull ItemStack display) {
             this.display = display;
@@ -65,11 +65,11 @@ public class GooeyButton extends ButtonBase {
             return new GooeyButton(buildDisplay(), onClick);
         }
 
-        private void validate() {
+        protected void validate() {
             if (display == null) throw new IllegalStateException("button display must be defined");
         }
 
-        private ItemStack buildDisplay() {
+        protected ItemStack buildDisplay() {
             if (title != null) display.setStackDisplayName(title);
 
             if (!lore.isEmpty()) {
