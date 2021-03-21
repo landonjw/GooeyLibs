@@ -7,18 +7,28 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.function.Consumer;
 
+/**
+ * Represents a page that is intended for pagination.
+ * <p>
+ * This acts as a doubly linked list, allowing for navigation between a chain of pages.
+ *
+ * @author landonjw
+ */
 public class LinkedPage extends GooeyPage {
 
-    private Page previous;
-    private Page next;
+    public static final String CURRENT_PAGE_PLACEHOLDER = "{current}";
+    public static final String TOTAL_PAGES_PLACEHOLDER = "{total}";
+
+    private LinkedPage previous;
+    private LinkedPage next;
 
     public LinkedPage(@Nonnull Template template,
                       @Nullable InventoryTemplate inventoryTemplate,
                       @Nullable String title,
                       @Nullable Consumer<PageAction> onOpen,
                       @Nullable Consumer<PageAction> onClose,
-                      @Nullable Page previous,
-                      @Nullable Page next) {
+                      @Nullable LinkedPage previous,
+                      @Nullable LinkedPage next) {
         super(template, inventoryTemplate, title, onOpen, onClose);
         this.previous = previous;
         this.next = next;
@@ -28,16 +38,33 @@ public class LinkedPage extends GooeyPage {
         return previous;
     }
 
-    public void setPrevious(Page previous) {
+    public void setPrevious(LinkedPage previous) {
         this.previous = previous;
+        update();
     }
 
     public Page getNext() {
         return next;
     }
 
-    public void setNext(Page next) {
+    public void setNext(LinkedPage next) {
         this.next = next;
+        update();
+    }
+
+    public int getCurrentPage() {
+        return (previous != null) ? previous.getCurrentPage() + 1 : 1;
+    }
+
+    public int getTotalPages() {
+        return (next != null) ? next.getTotalPages() : getCurrentPage();
+    }
+
+    @Override
+    public String getTitle() {
+        return super.getTitle()
+                .replace(CURRENT_PAGE_PLACEHOLDER, "" + getCurrentPage())
+                .replace(TOTAL_PAGES_PLACEHOLDER, "" + getTotalPages());
     }
 
     @Override
@@ -51,8 +78,8 @@ public class LinkedPage extends GooeyPage {
 
     public static class Builder extends GooeyPage.Builder {
 
-        protected Page previousPage;
-        protected Page nextPage;
+        protected LinkedPage previousPage;
+        protected LinkedPage nextPage;
 
         @Override
         public Builder title(@Nullable String title) {
@@ -96,12 +123,12 @@ public class LinkedPage extends GooeyPage {
             return this;
         }
 
-        public Builder nextPage(@Nullable Page next) {
+        public Builder nextPage(@Nullable LinkedPage next) {
             this.nextPage = next;
             return this;
         }
 
-        public Builder previousPage(@Nullable Page previous) {
+        public Builder previousPage(@Nullable LinkedPage previous) {
             this.previousPage = previous;
             return this;
         }
