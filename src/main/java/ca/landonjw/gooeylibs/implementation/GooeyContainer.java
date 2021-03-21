@@ -167,12 +167,21 @@ public class GooeyContainer extends Container {
 	}
 
 	public void refreshContainer() {
-		SPacketOpenWindow openWindow = new SPacketOpenWindow(
-				player.currentWindowId,
-				page.getTemplate().getTemplateType().getID(),
-				new TextComponentString(page.getTitle()),
-				page.getTemplate().getSize()
-		);
+		SPacketOpenWindow openWindow;
+		if (page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE) {
+			openWindow = new SPacketOpenWindow(
+					player.currentWindowId,
+					page.getTemplate().getTemplateType().getID(),
+					new TextComponentString(page.getTitle())
+			);
+		} else {
+			openWindow = new SPacketOpenWindow(
+					player.currentWindowId,
+					page.getTemplate().getTemplateType().getID(),
+					new TextComponentString(page.getTitle()),
+					page.getTemplate().getSize()
+			);
+		}
 		player.connection.sendPacket(openWindow);
 		updateAllContainerContents();
 	}
