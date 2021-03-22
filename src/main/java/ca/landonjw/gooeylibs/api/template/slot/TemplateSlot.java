@@ -18,7 +18,7 @@ public final class TemplateSlot extends Slot implements Subject<TemplateSlot> {
 
     public TemplateSlot(@Nullable Button button, int index, int xPosition, int yPosition) {
         super(null, index, xPosition, yPosition);
-        this.button = button;
+        setButton(button);
     }
 
     public Optional<Button> getButton() {
