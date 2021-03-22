@@ -79,9 +79,6 @@ public class GooeyContainer extends Container {
 				});
 			}
 		}
-		this.page.getTemplate().subscribe(this, (template) -> {
-			template.onUpdate(windowId, player);
-		});
 	}
 
 	private void updateSlotStack(int index, ItemStack stack, boolean playerInventory) {
