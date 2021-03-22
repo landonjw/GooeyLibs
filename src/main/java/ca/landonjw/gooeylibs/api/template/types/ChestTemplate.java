@@ -42,9 +42,9 @@ public class ChestTemplate extends Template {
 
     public static class Builder {
 
-        private final int COLUMNS = 9;
-        private final int rows;
-        private final Button[] buttons;
+        protected final int COLUMNS = 9;
+        protected final int rows;
+        protected final Button[] buttons;
 
         protected Button get(int row, int col) {
             return buttons[row * 9 + col];
