@@ -16,7 +16,7 @@ import java.util.List;
  *
  * @author landonjw
  */
-public class LinkedPageHelper {
+public class PaginationHelper {
 
     /**
      * Takes a list of {@link LinkedPage} and connects them in the order supplied.
@@ -58,9 +58,9 @@ public class LinkedPageHelper {
      *                    for example specifying {@link LinkedPage#onClose(PageAction)}
      * @return the first page generated, with all pages linked together.
      */
-    public static LinkedPage createPagesFromPlaceholder(@Nonnull Template template,
-                                                        @Nonnull List<Button> toReplace,
-                                                        @Nullable LinkedPage.Builder pageBuilder) {
+    public static LinkedPage createPagesFromPlaceholders(@Nonnull Template template,
+                                                         @Nonnull List<Button> toReplace,
+                                                         @Nullable LinkedPage.Builder pageBuilder) {
         // Get all the indexes of placeholder buttons.
         List<Integer> placeholderIndexes = new ArrayList<>();
         for (int i = 0; i < template.getSize(); i++) {

@@ -28,6 +28,12 @@ public class GooeyButton extends ButtonBase {
         return new Builder();
     }
 
+    public static GooeyButton of(ItemStack stack) {
+        return builder()
+                .display(stack)
+                .build();
+    }
+
     public static class Builder {
 
         protected ItemStack display;
