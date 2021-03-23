@@ -9,27 +9,27 @@ import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.function.Consumer;
 
-public class MoveableButton extends GooeyButton {
+public class MovableButton extends GooeyButton implements Movable {
 
-    private Consumer<MoveableButtonAction> onPickup;
-    private Consumer<MoveableButtonAction> onDrop;
+    private Consumer<MovableButtonAction> onPickup;
+    private Consumer<MovableButtonAction> onDrop;
 
-    protected MoveableButton(@Nonnull ItemStack display,
-                             @Nullable Consumer<ButtonAction> onClick,
-                             @Nullable Consumer<MoveableButtonAction> onPickup,
-                             @Nullable Consumer<MoveableButtonAction> onDrop) {
+    protected MovableButton(@Nonnull ItemStack display,
+                            @Nullable Consumer<ButtonAction> onClick,
+                            @Nullable Consumer<MovableButtonAction> onPickup,
+                            @Nullable Consumer<MovableButtonAction> onDrop) {
         super(display, onClick);
         this.onPickup = onPickup;
         this.onDrop = onDrop;
     }
 
-    public void onPickup(MoveableButtonAction action) {
+    public void onPickup(MovableButtonAction action) {
         if (onPickup != null) {
             this.onPickup.accept(action);
         }
     }
 
-    public void onDrop(MoveableButtonAction action) {
+    public void onDrop(MovableButtonAction action) {
         if (onDrop != null) {
             this.onDrop.accept(action);
         }
@@ -41,8 +41,8 @@ public class MoveableButton extends GooeyButton {
 
     public static class Builder extends GooeyButton.Builder {
 
-        protected Consumer<MoveableButtonAction> onPickup;
-        protected Consumer<MoveableButtonAction> onDrop;
+        protected Consumer<MovableButtonAction> onPickup;
+        protected Consumer<MovableButtonAction> onDrop;
 
         public Builder display(@Nonnull ItemStack display) {
             super.display(display);
@@ -69,7 +69,7 @@ public class MoveableButton extends GooeyButton {
             return this;
         }
 
-        public Builder onPickup(@Nullable Consumer<MoveableButtonAction> behaviour) {
+        public Builder onPickup(@Nullable Consumer<MovableButtonAction> behaviour) {
             this.onPickup = behaviour;
             return this;
         }
@@ -81,7 +81,7 @@ public class MoveableButton extends GooeyButton {
             return this;
         }
 
-        public Builder onDrop(@Nullable Consumer<MoveableButtonAction> behaviour) {
+        public Builder onDrop(@Nullable Consumer<MovableButtonAction> behaviour) {
             this.onDrop = behaviour;
             return this;
         }
@@ -93,9 +93,9 @@ public class MoveableButton extends GooeyButton {
             return this;
         }
 
-        public MoveableButton build() {
+        public MovableButton build() {
             validate();
-            return new MoveableButton(buildDisplay(), onClick, onPickup, onDrop);
+            return new MovableButton(buildDisplay(), onClick, onPickup, onDrop);
         }
 
     }

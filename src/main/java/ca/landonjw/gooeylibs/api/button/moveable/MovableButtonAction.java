@@ -9,15 +9,15 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import javax.annotation.Nonnull;
 
-public class MoveableButtonAction extends ButtonAction {
+public class MovableButtonAction extends ButtonAction {
 
     private boolean cancelled;
 
-    public MoveableButtonAction(@Nonnull EntityPlayerMP player,
-                                @Nonnull ButtonClick clickType,
-                                @Nonnull Button button,
-                                @Nonnull Template template,
-                                @Nonnull Page page, int slot) {
+    public MovableButtonAction(@Nonnull EntityPlayerMP player,
+                               @Nonnull ButtonClick clickType,
+                               @Nonnull Button button,
+                               @Nonnull Template template,
+                               @Nonnull Page page, int slot) {
         super(player, clickType, button, template, page, slot);
     }
 

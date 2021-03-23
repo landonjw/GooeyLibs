@@ -16,7 +16,9 @@ public enum TemplateType {
         this.id = id;
     }
 
+    @Deprecated
     public String getID() {
         return id;
     }
+
 }
