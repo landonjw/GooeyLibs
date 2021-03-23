@@ -26,7 +26,7 @@ public class RateLimitedButton extends ButtonBase {
 
     @Override
     public void onClick(@Nonnull ButtonAction action) {
-        if(isRateLimited()) return;
+        if (isRateLimited()) return;
 
         if (isTopElementAboveTimeThreshold()) lastActionTimes.remove();
         button.onClick(action);
