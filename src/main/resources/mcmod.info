@@ -1,7 +1,7 @@
 [
   {
-    "modid": "gooeylibs",
-    "name": "GooeyLibs",
+    "modid": "gooeylibs2",
+    "name": "GooeyLibs2",
     "description": "A collection of useful tools for creating user interfaces in Forge.",
     "version": "${version}",
     "mcversion": "${mcversion}",
@@ -10,7 +10,7 @@
     "authorList": [
       "landonjw"
     ],
-    "credits": "StaftCreamG, Karm, Endophile",
+    "credits": "CraftSteamG, Karim, EndofFile",
     "logoFile": "",
     "screenshots": [],
     "dependencies": []
