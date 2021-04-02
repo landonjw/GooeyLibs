@@ -63,10 +63,15 @@ public class PaginationHelper {
                                                          @Nullable LinkedPage.Builder pageBuilder) {
         // Get all the indexes of placeholder buttons.
         List<Integer> placeholderIndexes = new ArrayList<>();
+
         for (int i = 0; i < template.getSize(); i++) {
             if (template.getSlot(i).getButton().orElse(null) instanceof PlaceholderButton) {
                 placeholderIndexes.add(i);
             }
+        }
+
+        if (placeholderIndexes.isEmpty()) {
+            throw new IllegalStateException("no placeholders defined in supplied template");
         }
 
         // If page builder isn't specified, just create a default builder.
