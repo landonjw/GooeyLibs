@@ -312,7 +312,7 @@ public class GooeyContainer extends Container {
                     setButton(slot, null);
 
                     // Clone needs to return empty ItemStack or it desyncs.
-                    if (clickType == ClickType.CLONE || clickType == ClickType.QUICK_MOVE) {
+                    if (clickType == ClickType.CLONE || clickType == ClickType.QUICK_MOVE || clickType == ClickType.THROW) {
                         setPlayersCursor(cursorButton.getDisplay());
                         return ItemStack.EMPTY;
                     } else {
@@ -335,7 +335,7 @@ public class GooeyContainer extends Container {
                      * collisions when trying to drop. Quick move wants a return type of an empty ItemStack,
                      * so this guarantees it, otherwise there will be a desync.
                      */
-                    if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.CLONE) {
+                    if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.CLONE || clickType == ClickType.THROW) {
                         return ItemStack.EMPTY;
                     } else {
                         return cursorButton.getDisplay();
@@ -376,20 +376,6 @@ public class GooeyContainer extends Container {
 
     public Page getPage() {
         return page;
-    }
-
-    public void setPage(Page page) {
-        if (page != this.page) {
-            this.page.unsubscribe(this);
-            this.page = page;
-
-            initializePage(page);
-            subscribeToPage(page);
-
-            refreshContainer();
-
-            page.onOpen(new PageAction(player, page));
-        }
     }
 
     public void refreshContainer() {

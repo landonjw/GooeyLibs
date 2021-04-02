@@ -31,12 +31,17 @@ public class UIManager {
 
     public static void openUIForcefully(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
         if (player.openContainer instanceof GooeyContainer) {
-            ((GooeyContainer) player.openContainer).setPage(page);
-            return;
+            // Delay the open to allow sponge's annoying mixins to process previous container and not have aneurysm
+            Task.builder()
+                    .execute(() -> {
+                        GooeyContainer container = new GooeyContainer(player, page);
+                        container.open();
+                    })
+                    .build();
+        } else {
+            GooeyContainer container = new GooeyContainer(player, page);
+            container.open();
         }
-
-        GooeyContainer container = new GooeyContainer(player, page);
-        container.open();
     }
 
     public static void closeUI(@Nonnull EntityPlayerMP player) {
