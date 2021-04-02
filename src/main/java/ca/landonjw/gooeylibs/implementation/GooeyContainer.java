@@ -11,6 +11,7 @@ import ca.landonjw.gooeylibs.api.template.Template;
 import ca.landonjw.gooeylibs.api.template.TemplateType;
 import ca.landonjw.gooeylibs.api.template.slot.TemplateSlot;
 import ca.landonjw.gooeylibs.api.template.types.InventoryTemplate;
+import ca.landonjw.gooeylibs.implementation.tasks.Task;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
@@ -212,6 +213,22 @@ public class GooeyContainer extends Container {
             lastClickTick = server.getTickCounter();
         }
 
+        if (clickType == ClickType.QUICK_CRAFT && dragType == 8) {
+            /*
+             * If the user middle clicks and drags, this refreshes the container at the end of the tick.
+             * This is done because the click type propagates with the drag, yet does not always have a
+             * termination drag type. So we track the entry drag, and prevent the rest of the clicks from
+             * invoking.
+             */
+            Task.builder()
+                    .execute(() -> {
+                        updateAllContainerContents();
+                        setPlayersCursor((cursorButton != null) ? cursorButton.getDisplay() : ItemStack.EMPTY);
+                    })
+                    .build();
+            return ItemStack.EMPTY;
+        }
+
         patchDesyncs(slot, clickType);
 
         Button clickedButton = getButton(slot);
@@ -297,6 +314,10 @@ public class GooeyContainer extends Container {
                 if (clickedButton == null) {
                     return ItemStack.EMPTY;
                 }
+                if (clickType == ClickType.QUICK_CRAFT && dragType == 9) {
+                    setPlayersCursor(ItemStack.EMPTY);
+                    return ItemStack.EMPTY;
+                }
 
                 ButtonClick click = getButtonClickType(clickType, dragType);
                 MovableButtonAction action = new MovableButtonAction(player, click, clickedButton, template, page, targetTemplateSlot);
@@ -336,6 +357,9 @@ public class GooeyContainer extends Container {
                      * so this guarantees it, otherwise there will be a desync.
                      */
                     if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.CLONE || clickType == ClickType.THROW) {
+                        return ItemStack.EMPTY;
+                    } else if (clickType == ClickType.QUICK_CRAFT) {
+                        updateSlotStack(slot, getItemAtSlot(slot), isSlotInPlayerInventory(slot));
                         return ItemStack.EMPTY;
                     } else {
                         return cursorButton.getDisplay();
