@@ -203,7 +203,12 @@ public class GooeyContainer extends Container {
         if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL || clickType == ClickType.PICKUP) {
             if (lastClickTick == server.getTickCounter()) {
                 if (clickType == ClickType.PICKUP) {
-                    return (cursorButton != null) ? cursorButton.getDisplay() : ItemStack.EMPTY;
+                    if (ItemStack.areItemStacksEqualUsingNBTShareTag(getItemAtSlot(slot), cursorButton.getDisplay())) {
+                        ItemStack copy = getItemAtSlot(slot).copy();
+                        copy.setCount(copy.getCount() + cursorButton.getDisplay().getCount());
+                        return copy;
+                    }
+                    return getItemAtSlot(slot);
                 }
                 return ItemStack.EMPTY;
             }
@@ -235,7 +240,7 @@ public class GooeyContainer extends Container {
          *  send it to a separate handler.
          */
         if (clickedButton instanceof Movable || cursorButton != null) {
-            return handleMoveableButton(slot, dragType, clickType);
+            return handleMovableButton(slot, dragType, clickType);
         }
 
         /*
@@ -273,7 +278,7 @@ public class GooeyContainer extends Container {
         }
     }
 
-    private ItemStack handleMoveableButton(int slot, int dragType, ClickType clickType) {
+    private ItemStack handleMovableButton(int slot, int dragType, ClickType clickType) {
         /*
          * This prevents a desync with dragging an item.
          * Quick crafts begin and end with a click on slot -999,
@@ -358,6 +363,8 @@ public class GooeyContainer extends Container {
                     } else if (clickType == ClickType.QUICK_CRAFT) {
                         updateSlotStack(getTemplateIndex(slot), getItemAtSlot(slot), isSlotInPlayerInventory(slot));
                         return ItemStack.EMPTY;
+                    } else if (clickType == ClickType.PICKUP) {
+                        return getItemAtSlot(slot);
                     } else {
                         return cursorButton.getDisplay();
                     }
