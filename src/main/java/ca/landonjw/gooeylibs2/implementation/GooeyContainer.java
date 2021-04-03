@@ -17,7 +17,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.inventory.ClickType;
 import net.minecraft.inventory.Container;
-import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SPacketOpenWindow;
 import net.minecraft.network.play.server.SPacketSetSlot;
@@ -50,35 +49,42 @@ public class GooeyContainer extends Container {
         this.windowId = 1;
 
         this.page = page;
-        initializePage(page);
-        subscribeToPage(page);
-
-        MinecraftForge.EVENT_BUS.register(this);
-    }
-
-    private void subscribeToPage(Page page) {
-        page.subscribe(this, (update) -> {
-            initializePage(update);
-            refreshContainer();
-        });
-    }
-
-    private void initializePage(Page page) {
-        this.inventorySlots.forEach((slot) -> {
-            ((TemplateSlot) slot).unsubscribe(this);
-        });
-        if (inventoryTemplate != null) {
-            for (int i = 0; i < inventoryTemplate.getSize(); i++) {
-                inventoryTemplate.getSlot(i).unsubscribe(this);
-            }
-        }
-        this.inventorySlots = page.getTemplate().getSlots();
-        this.inventoryItemStacks = page.getTemplate().getDisplayStacks();
         this.inventoryTemplate = page.getInventoryTemplate().orElse(null);
-        this.inventorySlots.forEach((slot) -> {
-            ((TemplateSlot) slot).subscribe(this, () -> updateSlot(slot));
+
+        bindSlots();
+        bindPage();
+    }
+
+    private void bindPage() {
+        page.subscribe(this, () -> {
+            unbindSlots();
+            inventoryTemplate = page.getInventoryTemplate().orElse(null);
+            bindSlots();
+            openWindow();
         });
-        if (inventoryTemplate != null) {
+    }
+
+    private void bindSlots() {
+        inventorySlots = page.getTemplate().getSlots();
+        for (int i = 0; i < inventorySlots.size(); i++) {
+            int index = i;
+            ((TemplateSlot) inventorySlots.get(i)).subscribe(this, () -> {
+                updateSlotStack(index, getItemAtSlot(index), false);
+            });
+        }
+        inventoryItemStacks = page.getTemplate().getDisplayStacks();
+
+        /*
+         * Add user inventory portion to the container slots and stacks.
+         * Adding these slots are necessary to stop Sponge from having an aneurysm about missing slots,
+         */
+        if (inventoryTemplate == null) {
+            for (int i = 0; i < 36; i++) {
+                GooeyButton button = GooeyButton.of(player.inventoryContainer.inventoryItemStacks.get(9 + i));
+                inventorySlots.add(new TemplateSlot(button, i, 0, 0));
+                inventoryItemStacks.add(button.getDisplay());
+            }
+        } else {
             for (int i = 0; i < inventoryTemplate.getSize(); i++) {
                 int index = i;
                 int itemSlot = i + page.getTemplate().getSize();
@@ -88,12 +94,17 @@ public class GooeyContainer extends Container {
                 inventorySlots.add(inventoryTemplate.getSlot(i));
                 inventoryItemStacks.add(inventoryTemplate.getSlot(i).getStack());
             }
-        } else {
-            for (int i = 0; i < 36; i++) {
-                GooeyButton button = GooeyButton.of(player.inventoryContainer.inventoryItemStacks.get(9 + i));
-                inventorySlots.add(new TemplateSlot(button, i, 0, 0));
-                inventoryItemStacks.add(button.getDisplay());
-            }
+        }
+    }
+
+    private void unbindSlots() {
+        inventorySlots.forEach(slot -> {
+            ((TemplateSlot) slot).unsubscribe(this);
+        });
+        if (inventoryTemplate != null) {
+            inventoryTemplate.getSlots().forEach(slot -> {
+                ((TemplateSlot) slot).unsubscribe(this);
+            });
         }
     }
 
@@ -163,35 +174,23 @@ public class GooeyContainer extends Container {
         }
     }
 
-    private void updateSlot(@Nonnull Slot slot) {
-        SPacketSetSlot setSlot = new SPacketSetSlot(windowId, slot.getSlotIndex(), slot.getStack());
-        player.connection.sendPacket(setSlot);
-    }
-
     public void open() {
         player.closeContainer();
         player.openContainer = this;
         player.currentWindowId = windowId;
-
-        SPacketOpenWindow openWindow;
-        if (page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE) {
-            openWindow = new SPacketOpenWindow(
-                    player.currentWindowId,
-                    page.getTemplate().getTemplateType().getID(),
-                    new TextComponentString(page.getTitle())
-            );
-        } else {
-            openWindow = new SPacketOpenWindow(
-                    player.currentWindowId,
-                    page.getTemplate().getTemplateType().getID(),
-                    new TextComponentString(page.getTitle()),
-                    page.getTemplate().getSize()
-            );
-        }
-        player.connection.sendPacket(openWindow);
-
-        updateAllContainerContents();
+        openWindow();
         page.onOpen(new PageAction(player, page));
+    }
+
+    private void openWindow() {
+        SPacketOpenWindow openWindow = new SPacketOpenWindow(
+                player.currentWindowId,
+                page.getTemplate().getTemplateType().getID(),
+                new TextComponentString(page.getTitle()),
+                page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE ? 0 : page.getTemplate().getSize()
+        );
+        player.connection.sendPacket(openWindow);
+        updateAllContainerContents();
     }
 
     private void patchDesyncs(int slot, ClickType clickType) {
@@ -204,7 +203,6 @@ public class GooeyContainer extends Container {
 
     @Override
     public ItemStack slotClick(int slot, int dragType, ClickType clickType, EntityPlayer playerSP) {
-        System.out.println(slot + ":" + dragType + ":" + clickType);
         /*
          * These click types represent the user quickly picking up or moving items.
          * The click type proliferates and invokes slotClick for each stack that would be affected.
