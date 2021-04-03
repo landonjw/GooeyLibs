@@ -193,6 +193,11 @@ public class GooeyContainer extends Container {
 
     @Override
     public ItemStack slotClick(int slot, int dragType, ClickType clickType, EntityPlayer playerSP) {
+        // Don't do anything if user is only clicking edge of UI.
+        if (slot == -1) {
+            return ItemStack.EMPTY;
+        }
+
         /*
          * These click types represent the user quickly picking up or moving items.
          * The click type proliferates and invokes slotClick for each stack that would be affected.
@@ -203,12 +208,17 @@ public class GooeyContainer extends Container {
         if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL || clickType == ClickType.PICKUP) {
             if (lastClickTick == server.getTickCounter()) {
                 if (clickType == ClickType.PICKUP) {
-                    if (ItemStack.areItemStacksEqualUsingNBTShareTag(getItemAtSlot(slot), cursorButton.getDisplay())) {
-                        ItemStack copy = getItemAtSlot(slot).copy();
-                        copy.setCount(copy.getCount() + cursorButton.getDisplay().getCount());
-                        return copy;
+                    if (cursorButton != null) {
+                        ItemStack clickedItem = getItemAtSlot(slot);
+                        ItemStack cursorItem = cursorButton.getDisplay();
+
+                        if (clickedItem.getItem() == cursorItem.getItem() && ItemStack.areItemStackTagsEqual(clickedItem, cursorItem)) {
+                            ItemStack copy = getItemAtSlot(slot).copy();
+                            copy.setCount(copy.getCount() + cursorButton.getDisplay().getCount());
+                            return copy;
+                        }
+                        return cursorButton.getDisplay();
                     }
-                    return getItemAtSlot(slot);
                 }
                 return ItemStack.EMPTY;
             }
@@ -234,7 +244,6 @@ public class GooeyContainer extends Container {
         patchDesyncs(slot, clickType);
 
         Button clickedButton = getButton(slot);
-
         /*
          *  If the button being interacted with is moveable, or there is currently a moveable button on the cursor,
          *  send it to a separate handler.
