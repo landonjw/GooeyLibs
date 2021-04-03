@@ -140,20 +140,10 @@ public class GooeyContainer extends Container {
     }
 
     private ItemStack getItemAtSlot(int slot) {
-        if (slot == -999) {
+        if (slot == -999 || slot >= inventorySlots.size()) {
             return ItemStack.EMPTY;
-        } else if (isSlotInPlayerInventory(slot)) {
-            int targetSlot = slot - page.getTemplate().getSize();
-            if (inventoryTemplate != null) {
-                return inventoryTemplate.getSlot(targetSlot).getStack();
-            } else {
-                //First 0-7 slots contain player's armor, hand slots, etc. So we offset for the inventory UI slots.
-                int PLAYER_INVENTORY_SLOT_OFFSET = 9;
-                return player.inventoryContainer.getSlot(targetSlot + PLAYER_INVENTORY_SLOT_OFFSET).getStack();
-            }
-        } else {
-            return page.getTemplate().getSlot(slot).getStack();
         }
+        return inventorySlots.get(slot).getStack();
     }
 
     private Button getButton(int slot) {
@@ -366,7 +356,7 @@ public class GooeyContainer extends Container {
                     if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.CLONE || clickType == ClickType.THROW) {
                         return ItemStack.EMPTY;
                     } else if (clickType == ClickType.QUICK_CRAFT) {
-                        updateSlotStack(slot, getItemAtSlot(slot), isSlotInPlayerInventory(slot));
+                        updateSlotStack(getTemplateIndex(slot), getItemAtSlot(slot), isSlotInPlayerInventory(slot));
                         return ItemStack.EMPTY;
                     } else {
                         return cursorButton.getDisplay();
@@ -407,26 +397,6 @@ public class GooeyContainer extends Container {
 
     public Page getPage() {
         return page;
-    }
-
-    public void refreshContainer() {
-        SPacketOpenWindow openWindow;
-        if (page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE) {
-            openWindow = new SPacketOpenWindow(
-                    player.currentWindowId,
-                    page.getTemplate().getTemplateType().getID(),
-                    new TextComponentString(page.getTitle())
-            );
-        } else {
-            openWindow = new SPacketOpenWindow(
-                    player.currentWindowId,
-                    page.getTemplate().getTemplateType().getID(),
-                    new TextComponentString(page.getTitle()),
-                    page.getTemplate().getSize()
-            );
-        }
-        player.connection.sendPacket(openWindow);
-        updateAllContainerContents();
     }
 
     private void updateAllContainerContents() {
