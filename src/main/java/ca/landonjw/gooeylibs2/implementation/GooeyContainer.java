@@ -3,6 +3,7 @@ package ca.landonjw.gooeylibs2.implementation;
 import ca.landonjw.gooeylibs2.api.button.Button;
 import ca.landonjw.gooeylibs2.api.button.ButtonAction;
 import ca.landonjw.gooeylibs2.api.button.ButtonClick;
+import ca.landonjw.gooeylibs2.api.button.GooeyButton;
 import ca.landonjw.gooeylibs2.api.button.moveable.Movable;
 import ca.landonjw.gooeylibs2.api.button.moveable.MovableButtonAction;
 import ca.landonjw.gooeylibs2.api.page.Page;
@@ -84,13 +85,21 @@ public class GooeyContainer extends Container {
                 inventoryTemplate.getSlot(i).subscribe(this, () -> {
                     updateSlotStack(index, getItemAtSlot(itemSlot), true);
                 });
+                inventorySlots.add(inventoryTemplate.getSlot(i));
+                inventoryItemStacks.add(inventoryTemplate.getSlot(i).getStack());
+            }
+        } else {
+            for (int i = 0; i < 36; i++) {
+                GooeyButton button = GooeyButton.of(player.inventoryContainer.inventoryItemStacks.get(9 + i));
+                inventorySlots.add(new TemplateSlot(button, i, 0, 0));
+                inventoryItemStacks.add(button.getDisplay());
             }
         }
     }
 
     private void updateSlotStack(int index, ItemStack stack, boolean playerInventory) {
         if (playerInventory) {
-            SPacketSetSlot setSlot = new SPacketSetSlot(windowId, this.inventorySlots.size() + index, stack);
+            SPacketSetSlot setSlot = new SPacketSetSlot(windowId, page.getTemplate().getSize() + index, stack);
             player.connection.sendPacket(setSlot);
         } else {
             SPacketSetSlot setSlot = new SPacketSetSlot(windowId, index, stack);
@@ -100,7 +109,7 @@ public class GooeyContainer extends Container {
 
     private int getTemplateIndex(int slotIndex) {
         if (isSlotInPlayerInventory(slotIndex)) {
-            return slotIndex - this.inventorySlots.size();
+            return slotIndex - page.getTemplate().getSize();
         } else {
             return slotIndex;
         }
@@ -191,11 +200,11 @@ public class GooeyContainer extends Container {
         } else if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL) {
             updateAllContainerContents();
         }
-        lastClickTick = server.getTickCounter();
     }
 
     @Override
     public ItemStack slotClick(int slot, int dragType, ClickType clickType, EntityPlayer playerSP) {
+        System.out.println(slot + ":" + dragType + ":" + clickType);
         /*
          * These click types represent the user quickly picking up or moving items.
          * The click type proliferates and invokes slotClick for each stack that would be affected.
