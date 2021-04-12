@@ -79,6 +79,11 @@ public class PaginationHelper {
 
         List<LinkedPage> pages = new ArrayList<>();
         int currentIndex = 0; // Stores the index of the current button being replaced
+
+        if (toReplace.isEmpty()) {
+            return builder.template(template.clone()).build();
+        }
+
         while (currentIndex < toReplace.size()) {
             // Clones the template, and replaces all placeholders with buttons from toReplace.
             Template replacement = template.clone();
