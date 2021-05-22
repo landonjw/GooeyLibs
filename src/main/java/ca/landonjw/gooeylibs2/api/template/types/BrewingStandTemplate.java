@@ -8,6 +8,8 @@ import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
 
 public class BrewingStandTemplate extends Template {
 
@@ -45,6 +47,12 @@ public class BrewingStandTemplate extends Template {
 
     public BrewingStandTemplate bottles(@Nullable Button button) {
         for (int i = 0; i < 3; i++) bottle(i, button);
+        return this;
+    }
+
+    public BrewingStandTemplate bottlesFromList(@Nonnull List<Button> buttons) {
+        Iterator<Button> iterator = buttons.iterator();
+        for (int i = 0; i < 3; i++) bottle(i, (iterator.hasNext()) ? iterator.next() : null);
         return this;
     }
 
@@ -109,6 +117,11 @@ public class BrewingStandTemplate extends Template {
 
         public Builder bottles(@Nullable Button button) {
             templateInstance.bottles(button);
+            return this;
+        }
+
+        public Builder bottlesFromList(@Nonnull List<Button> buttons) {
+            templateInstance.bottlesFromList(buttons);
             return this;
         }
 

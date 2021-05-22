@@ -8,6 +8,8 @@ import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
 
 public class DispenserTemplate extends Template {
 
@@ -32,6 +34,16 @@ public class DispenserTemplate extends Template {
         for (int i = 0; i < getSize(); i++) {
             if (!getSlot(i).getButton().isPresent()) {
                 getSlot(i).setButton(button);
+            }
+        }
+        return this;
+    }
+
+    public DispenserTemplate fillFromList(@Nonnull List<Button> buttons) {
+        Iterator<Button> iterator = buttons.iterator();
+        for (int i = 0; i < getSize(); i++) {
+            if (!getSlot(i).getButton().isPresent()) {
+                getSlot(i).setButton((iterator.hasNext()) ? iterator.next() : null);
             }
         }
         return this;
@@ -93,6 +105,11 @@ public class DispenserTemplate extends Template {
 
         public Builder fill(@Nullable Button button) {
             templateInstance.fill(button);
+            return this;
+        }
+
+        public Builder fillFromList(@Nonnull List<Button> buttons) {
+            templateInstance.fillFromList(buttons);
             return this;
         }
 
