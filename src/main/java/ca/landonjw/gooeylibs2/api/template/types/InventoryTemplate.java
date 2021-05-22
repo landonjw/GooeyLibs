@@ -2,6 +2,7 @@ package ca.landonjw.gooeylibs2.api.template.types;
 
 import ca.landonjw.gooeylibs2.api.button.Button;
 import ca.landonjw.gooeylibs2.api.button.InventoryListenerButton;
+import ca.landonjw.gooeylibs2.api.helpers.TemplateHelper;
 import ca.landonjw.gooeylibs2.api.template.LineType;
 import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -39,6 +40,7 @@ public final class InventoryTemplate extends ChestTemplate {
         return new InventoryTemplate(clonedSlots);
     }
 
+    @Deprecated
     public NonNullList<ItemStack> getFullDisplay(@Nonnull EntityPlayerMP player) {
         NonNullList<ItemStack> displays = NonNullList.create();
 
@@ -54,75 +56,83 @@ public final class InventoryTemplate extends ChestTemplate {
         return new Builder();
     }
 
-    public static class Builder extends ChestTemplate.Builder {
+    public static class Builder {
+
+        /**
+         * Instance of the template being built.
+         * <p>
+         * In 2.1.0, all template builders were moved from storing data instances (ie. button arrays)
+         * of templates and constructing them on build, to simply delegating to an instance of the template.
+         * <p>
+         * This was done in order to shift all convenience methods (ie. row, column, border, etc.) into the
+         * corresponding Template classes themselves to allow for easier modification of button state after
+         * the Template was built.
+         * <p>
+         * Since we assign a new template instance at the end of each {@link #build()},
+         * this should not have any side effects and thus be backwards compatible.
+         * <p>
+         * Yay for abstraction!
+         */
+        private InventoryTemplate templateInstance;
 
         public Builder() {
-            super(4);
+            this.templateInstance = new InventoryTemplate(TemplateHelper.slotsOf(4 * COLUMNS));
         }
 
-        @Override
         public Builder set(int index, @Nullable Button button) {
-            super.set(index, button);
+            templateInstance.set(index, button);
             return this;
         }
 
-        @Override
         public Builder set(int row, int col, @Nullable Button button) {
-            super.set(row, col, button);
+            templateInstance.set(row, col, button);
             return this;
         }
 
-        @Override
         public Builder row(int row, @Nullable Button button) {
-            super.row(row, button);
+            templateInstance.row(row, button);
             return this;
         }
 
-        @Override
         public Builder column(int col, @Nullable Button button) {
-            super.column(col, button);
+            templateInstance.column(col, button);
             return this;
         }
 
-        @Override
         public Builder line(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nullable Button button) {
-            super.line(lineType, startRow, startCol, length, button);
+            templateInstance.line(lineType, startRow, startCol, length, button);
             return this;
         }
 
-        @Override
         public Builder square(int startRow, int startCol, int size, @Nullable Button button) {
-            super.rectangle(startRow, startCol, size, size, button);
+            templateInstance.square(startRow, startCol, size, button);
             return this;
         }
 
-        @Override
         public Builder rectangle(int startRow, int startCol, int length, int width, @Nullable Button button) {
-            super.rectangle(startRow, startCol, length, width, button);
+            templateInstance.rectangle(startRow, startCol, length, width, button);
             return this;
         }
 
-        @Override
         public Builder border(int startRow, int startCol, int length, int width, @Nullable Button button) {
-            super.border(startRow, startCol, length, width, button);
+            templateInstance.border(startRow, startCol, length, width, button);
             return this;
         }
 
-        @Override
         public Builder checker(int startRow, int startCol, int length, int width, @Nullable Button button, @Nullable Button button2) {
-            super.checker(startRow, startCol, length, width, button, button2);
+            templateInstance.checker(startRow, startCol, length, width, button, button2);
             return this;
         }
 
-        @Override
         public Builder fill(@Nullable Button button) {
-            super.fill(button);
+            templateInstance.fill(button);
             return this;
         }
 
-        @Override
         public InventoryTemplate build() {
-            return new InventoryTemplate(toSlots());
+            InventoryTemplate templateToReturn = templateInstance;
+            templateInstance = new InventoryTemplate(TemplateHelper.slotsOf(4 * COLUMNS));
+            return templateToReturn;
         }
 
     }

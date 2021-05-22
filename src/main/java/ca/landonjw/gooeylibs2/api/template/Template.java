@@ -48,6 +48,7 @@ public abstract class Template extends UpdateEmitter<Template> {
 
     public abstract Template clone();
 
+    @Deprecated
     public final NonNullList<ItemStack> getDisplayStacks() {
         NonNullList<ItemStack> copy = NonNullList.create();
         displayStacks.forEach(copy::add);
