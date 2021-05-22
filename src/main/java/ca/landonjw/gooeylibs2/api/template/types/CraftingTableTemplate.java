@@ -8,6 +8,8 @@ import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
 
 public class CraftingTableTemplate extends Template {
 
@@ -43,10 +45,30 @@ public class CraftingTableTemplate extends Template {
         return this;
     }
 
+    public CraftingTableTemplate fillFromList(@Nonnull List<Button> buttons) {
+        Iterator<Button> iterator = buttons.iterator();
+        for (int i = 0; i < getSize(); i++) {
+            if (!getSlot(i).getButton().isPresent()) {
+                getSlot(i).setButton((iterator.hasNext()) ? iterator.next() : null);
+            }
+        }
+        return this;
+    }
+
     public CraftingTableTemplate fillGrid(@Nullable Button button) {
         for (int i = 1; i < 10; i++) {
             if (!getSlot(i).getButton().isPresent()) {
                 getSlot(i).setButton(button);
+            }
+        }
+        return this;
+    }
+
+    public CraftingTableTemplate fillGridFromList(@Nonnull List<Button> buttons) {
+        Iterator<Button> iterator = buttons.iterator();
+        for (int i = 1; i < 10; i++) {
+            if (!getSlot(i).getButton().isPresent()) {
+                getSlot(i).setButton((iterator.hasNext()) ? iterator.next() : null);
             }
         }
         return this;
@@ -112,8 +134,18 @@ public class CraftingTableTemplate extends Template {
             return this;
         }
 
+        public Builder fillFromList(@Nonnull List<Button> buttons) {
+            templateInstance.fillFromList(buttons);
+            return this;
+        }
+
         public Builder fillGrid(@Nullable Button button) {
             templateInstance.fillGrid(button);
+            return this;
+        }
+
+        public Builder fillGridFromList(@Nonnull List<Button> buttons) {
+            templateInstance.fillGridFromList(buttons);
             return this;
         }
 

@@ -11,6 +11,7 @@ import net.minecraft.util.NonNullList;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public final class InventoryTemplate extends ChestTemplate {
 
@@ -94,8 +95,18 @@ public final class InventoryTemplate extends ChestTemplate {
             return this;
         }
 
+        public Builder rowFromList(int row, @Nonnull List<Button> buttons) {
+            templateInstance.rowFromList(row, buttons);
+            return this;
+        }
+
         public Builder column(int col, @Nullable Button button) {
             templateInstance.column(col, button);
+            return this;
+        }
+
+        public Builder columnFromList(int col, @Nonnull List<Button> buttons) {
+            templateInstance.columnFromList(col, buttons);
             return this;
         }
 
@@ -104,8 +115,18 @@ public final class InventoryTemplate extends ChestTemplate {
             return this;
         }
 
+        public Builder lineFromList(@Nonnull LineType lineType, int startRow, int startCol, int length, @Nonnull List<Button> buttons) {
+            templateInstance.lineFromList(lineType, startRow, startCol, length, buttons);
+            return this;
+        }
+
         public Builder square(int startRow, int startCol, int size, @Nullable Button button) {
             templateInstance.square(startRow, startCol, size, button);
+            return this;
+        }
+
+        public Builder squareFromList(int startRow, int startCol, int size, @Nonnull List<Button> buttons) {
+            templateInstance.squareFromList(startRow, startCol, size, buttons);
             return this;
         }
 
@@ -114,8 +135,18 @@ public final class InventoryTemplate extends ChestTemplate {
             return this;
         }
 
+        public Builder rectangleFromList(int startRow, int startCol, int length, int width, @Nonnull List<Button> buttons) {
+            templateInstance.rectangleFromList(startRow, startCol, length, width, buttons);
+            return this;
+        }
+
         public Builder border(int startRow, int startCol, int length, int width, @Nullable Button button) {
             templateInstance.border(startRow, startCol, length, width, button);
+            return this;
+        }
+
+        public Builder borderFromList(int startRow, int startCol, int length, int width, @Nonnull List<Button> buttons) {
+            templateInstance.borderFromList(startRow, startCol, length, width, buttons);
             return this;
         }
 
@@ -124,8 +155,18 @@ public final class InventoryTemplate extends ChestTemplate {
             return this;
         }
 
+        public Builder checkerFromList(int startRow, int startCol, int length, int width, @Nonnull List<Button> buttons, @Nonnull List<Button> buttons2) {
+            templateInstance.checkerFromList(startRow, startCol, length, width, buttons, buttons2);
+            return this;
+        }
+
         public Builder fill(@Nullable Button button) {
             templateInstance.fill(button);
+            return this;
+        }
+
+        public Builder fillFromList(@Nonnull List<Button> buttons) {
+            templateInstance.fillFromList(buttons);
             return this;
         }
 
