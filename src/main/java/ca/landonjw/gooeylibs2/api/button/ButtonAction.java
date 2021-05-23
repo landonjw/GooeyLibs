@@ -6,6 +6,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ButtonAction {
 
@@ -52,6 +53,18 @@ public class ButtonAction {
 
     public int getSlot() {
         return slot;
+    }
+
+    public boolean isSlotInInventory() {
+        return page.getInventoryTemplate().isPresent() && slot >= template.getSize();
+    }
+
+    public Optional<Integer> getInventorySlot() {
+        if (isSlotInInventory()) {
+            return Optional.of(slot - template.getSize());
+        } else {
+            return Optional.empty();
+        }
     }
 
 }
