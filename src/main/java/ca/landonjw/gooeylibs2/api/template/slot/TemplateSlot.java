@@ -3,7 +3,7 @@ package ca.landonjw.gooeylibs2.api.template.slot;
 import ca.landonjw.gooeylibs2.api.button.Button;
 import ca.landonjw.gooeylibs2.api.data.EventEmitter;
 import ca.landonjw.gooeylibs2.api.data.Subject;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;

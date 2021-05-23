@@ -2,7 +2,7 @@ package ca.landonjw.gooeylibs2.api.helpers;
 
 import ca.landonjw.gooeylibs2.implementation.GooeyContainer;
 import ca.landonjw.gooeylibs2.implementation.tasks.Task;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
@@ -24,7 +24,7 @@ public class InventoryHelper {
      *                      to get this, you should typically use ButtonAction#getInventorySlot.
      * @param stack         the itemstack to set in the player's inventory.
      */
-    public static void setToInventorySlot(@Nonnull EntityPlayerMP player, int inventorySlot, @Nullable ItemStack stack) {
+    public static void setToInventorySlot(@Nonnull ServerPlayerEntity player, int inventorySlot, @Nullable ItemStack stack) {
         if (inventorySlot < 0) return;
 
         // Empty slots are always populated with ItemStack.EMPTY instead of null.
@@ -56,7 +56,7 @@ public class InventoryHelper {
      * @param inventoryCol the column to set stack in, starting at 0
      * @param stack        the itemstack to set in the player's inventory.
      */
-    public static void setToInventorySlot(@Nonnull EntityPlayerMP player, int inventoryRow, int inventoryCol, @Nullable ItemStack stack) {
+    public static void setToInventorySlot(@Nonnull ServerPlayerEntity player, int inventoryRow, int inventoryCol, @Nullable ItemStack stack) {
         setToInventorySlot(player, inventoryRow * 9 + inventoryCol, stack);
     }
 
@@ -67,7 +67,7 @@ public class InventoryHelper {
      * @param player the player to add inventory stack to
      * @param stack  the itemstack to add to player's inventory
      */
-    public static void addToInventorySlot(@Nonnull EntityPlayerMP player, @Nonnull ItemStack stack) {
+    public static void addToInventorySlot(@Nonnull ServerPlayerEntity player, @Nonnull ItemStack stack) {
         if (stack == ItemStack.EMPTY) return;
 
         player.inventory.addItemStackToInventory(stack.copy());
@@ -87,7 +87,7 @@ public class InventoryHelper {
      * @return an itemstack at the given inventory template slot location, or ItemStack.EMPTY if no item in slot
      */
     @Nonnull
-    public static ItemStack getStackAtSlot(@Nonnull EntityPlayerMP player, int inventorySlot) {
+    public static ItemStack getStackAtSlot(@Nonnull ServerPlayerEntity player, int inventorySlot) {
         /*
          * Offset hotbar and main inventory since their implementation differs from concept of template slots.
          * Hotbar in inventory is always placed before main inventory slots in player inventory, where

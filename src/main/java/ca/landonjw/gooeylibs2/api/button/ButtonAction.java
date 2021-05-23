@@ -2,7 +2,7 @@ package ca.landonjw.gooeylibs2.api.button;
 
 import ca.landonjw.gooeylibs2.api.page.Page;
 import ca.landonjw.gooeylibs2.api.template.Template;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
@@ -10,14 +10,14 @@ import java.util.Optional;
 
 public class ButtonAction {
 
-    private final EntityPlayerMP player;
+    private final ServerPlayerEntity player;
     private final ButtonClick clickType;
     private final Button button;
     private final Template template;
     private final Page page;
     private final int slot;
 
-    public ButtonAction(@Nonnull EntityPlayerMP player,
+    public ButtonAction(@Nonnull ServerPlayerEntity player,
                         @Nonnull ButtonClick clickType,
                         @Nonnull Button button,
                         @Nonnull Template template,
@@ -31,7 +31,7 @@ public class ButtonAction {
         this.slot = slot;
     }
 
-    public EntityPlayerMP getPlayer() {
+    public ServerPlayerEntity getPlayer() {
         return player;
     }
 

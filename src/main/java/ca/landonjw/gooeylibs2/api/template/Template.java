@@ -3,7 +3,7 @@ package ca.landonjw.gooeylibs2.api.template;
 import ca.landonjw.gooeylibs2.api.data.UpdateEmitter;
 import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 import com.google.common.collect.Lists;
-import net.minecraft.inventory.Slot;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 

@@ -5,7 +5,7 @@ import ca.landonjw.gooeylibs2.api.button.InventoryListenerButton;
 import ca.landonjw.gooeylibs2.api.helpers.TemplateHelper;
 import ca.landonjw.gooeylibs2.api.template.LineType;
 import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.NonNullList;
 
@@ -19,10 +19,10 @@ public final class InventoryTemplate extends ChestTemplate {
         super(slots);
     }
 
-    public ItemStack getDisplayForSlot(@Nonnull EntityPlayerMP player, int index) {
+    public ItemStack getDisplayForSlot(@Nonnull ServerPlayerEntity player, int index) {
         TemplateSlot slot = getSlot(index);
         if (slot.getButton().isPresent() && slot.getButton().get() instanceof InventoryListenerButton) {
-            return player.inventoryContainer.inventoryItemStacks.get(index + 9);
+            return player.container.getInventory().get(index + 9);
         } else {
             return slot.getStack();
         }
@@ -42,7 +42,7 @@ public final class InventoryTemplate extends ChestTemplate {
     }
 
     @Deprecated
-    public NonNullList<ItemStack> getFullDisplay(@Nonnull EntityPlayerMP player) {
+    public NonNullList<ItemStack> getFullDisplay(@Nonnull ServerPlayerEntity player) {
         NonNullList<ItemStack> displays = NonNullList.create();
 
         int PLAYER_INVENTORY_OFFSET = 8;

@@ -2,8 +2,9 @@ package ca.landonjw.gooeylibs2.api.button;
 
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagList;
-import net.minecraft.nbt.NBTTagString;
+import net.minecraft.nbt.ListNBT;
+import net.minecraft.nbt.StringNBT;
+import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -76,20 +77,20 @@ public class GooeyButton extends ButtonBase {
         }
 
         protected ItemStack buildDisplay() {
-            if (title != null) display.setStackDisplayName(title);
+            if (title != null) display.setDisplayName(new StringTextComponent(title));
 
             if (!lore.isEmpty()) {
-                NBTTagList nbtLore = new NBTTagList();
+                ListNBT nbtLore = new ListNBT();
                 for (String line : lore) {
                     //If a line in the lore is null, just ignore it.
                     if (line != null) {
-                        nbtLore.appendTag(new NBTTagString(line));
+                        nbtLore.add(StringNBT.valueOf(line));
                     }
                 }
-                display.getOrCreateSubCompound("display").setTag("Lore", nbtLore);
+                display.getOrCreateChildTag("display").put("Lore", nbtLore);
             }
-            if (display.hasTagCompound()) {
-                display.getTagCompound().setString("tooltip", "");
+            if (display.hasTag()) {
+                display.getTag().putString("tooltip", "");
             }
             return display;
         }

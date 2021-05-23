@@ -9,28 +9,28 @@ import ca.landonjw.gooeylibs2.api.button.moveable.MovableButtonAction;
 import ca.landonjw.gooeylibs2.api.page.Page;
 import ca.landonjw.gooeylibs2.api.page.PageAction;
 import ca.landonjw.gooeylibs2.api.template.Template;
-import ca.landonjw.gooeylibs2.api.template.TemplateType;
 import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import ca.landonjw.gooeylibs2.implementation.tasks.Task;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.inventory.ClickType;
-import net.minecraft.inventory.Container;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.container.ClickType;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.SPacketOpenWindow;
-import net.minecraft.network.play.server.SPacketSetSlot;
+import net.minecraft.network.play.server.SOpenWindowPacket;
+import net.minecraft.network.play.server.SSetSlotPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import javax.annotation.Nonnull;
+import java.util.List;
 
 public class GooeyContainer extends Container {
 
-    private static final MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-    private final EntityPlayerMP player;
+    private final MinecraftServer server;
+    private final ServerPlayerEntity player;
 
     private Page page;
     public InventoryTemplate inventoryTemplate;
@@ -44,9 +44,10 @@ public class GooeyContainer extends Container {
      */
     private Button cursorButton;
 
-    public GooeyContainer(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
+    public GooeyContainer(@Nonnull ServerPlayerEntity player, @Nonnull Page page) {
+        super(page.getTemplate().getTemplateType().getContainerType(page.getTemplate()), 1);
+        this.server = player.world.getServer();
         this.player = player;
-        this.windowId = 1;
 
         this.page = page;
         this.inventoryTemplate = page.getInventoryTemplate().orElse(null);
@@ -67,14 +68,14 @@ public class GooeyContainer extends Container {
     }
 
     private void bindSlots() {
-        inventorySlots = page.getTemplate().getSlots();
-        for (int i = 0; i < inventorySlots.size(); i++) {
+        List<Slot> slots = page.getTemplate().getSlots();
+        for (int i = 0; i < slots.size(); i++) {
             int index = i;
-            ((TemplateSlot) inventorySlots.get(i)).subscribe(this, () -> {
+            ((TemplateSlot) slots.get(i)).subscribe(this, () -> {
                 updateSlotStack(index, getItemAtSlot(index), false);
             });
+            addSlot(slots.get(i));
         }
-        inventoryItemStacks = page.getTemplate().getDisplayStacks();
 
         /*
          * Add user inventory portion to the container slots and stacks.
@@ -84,14 +85,12 @@ public class GooeyContainer extends Container {
             // Sets the slots for the main inventory.
             for (int i = 9; i < 36; i++) {
                 GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
-                inventorySlots.add(new TemplateSlot(button, i - 9, 0, 0));
-                inventoryItemStacks.add(button.getDisplay());
+                addSlot(new TemplateSlot(button, i - 9, 0, 0));
             }
             // Sets the slots for the hotbar.
             for (int i = 0; i < 9; i++) {
                 GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
-                inventorySlots.add(new TemplateSlot(button, i + 27, 0, 0));
-                inventoryItemStacks.add(button.getDisplay());
+                addSlot(new TemplateSlot(button, i + 27, 0, 0));
             }
         } else {
             for (int i = 0; i < inventoryTemplate.getSize(); i++) {
@@ -100,8 +99,7 @@ public class GooeyContainer extends Container {
                 inventoryTemplate.getSlot(i).subscribe(this, () -> {
                     updateSlotStack(index, getItemAtSlot(itemSlot), true);
                 });
-                inventorySlots.add(inventoryTemplate.getSlot(i));
-                inventoryItemStacks.add(inventoryTemplate.getSlot(i).getStack());
+                addSlot(inventoryTemplate.getSlot(i));
             }
         }
     }
@@ -119,10 +117,10 @@ public class GooeyContainer extends Container {
 
     private void updateSlotStack(int index, ItemStack stack, boolean playerInventory) {
         if (playerInventory) {
-            SPacketSetSlot setSlot = new SPacketSetSlot(windowId, page.getTemplate().getSize() + index, stack);
+            SSetSlotPacket setSlot = new SSetSlotPacket(windowId, page.getTemplate().getSize() + index, stack);
             player.connection.sendPacket(setSlot);
         } else {
-            SPacketSetSlot setSlot = new SPacketSetSlot(windowId, index, stack);
+            SSetSlotPacket setSlot = new SSetSlotPacket(windowId, index, stack);
             player.connection.sendPacket(setSlot);
         }
     }
@@ -145,7 +143,7 @@ public class GooeyContainer extends Container {
 
     private boolean isSlotInPlayerInventory(int slot) {
         int templateSize = page.getTemplate().getSize();
-        return slot >= templateSize && slot - templateSize < player.inventoryContainer.inventorySlots.size();
+        return slot >= templateSize && slot - templateSize < player.container.inventorySlots.size();
     }
 
     private ItemStack getItemAtSlot(int slot) {
@@ -182,11 +180,11 @@ public class GooeyContainer extends Container {
     }
 
     private void openWindow() {
-        SPacketOpenWindow openWindow = new SPacketOpenWindow(
+        SOpenWindowPacket openWindow = new SOpenWindowPacket(
                 player.currentWindowId,
-                page.getTemplate().getTemplateType().getID(),
-                new TextComponentString(page.getTitle()),
-                page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE ? 0 : page.getTemplate().getSize()
+                page.getTemplate().getTemplateType().getContainerType(page.getTemplate()),
+                new StringTextComponent(page.getTitle())
+//                page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE ? 0 : page.getTemplate().getSize() TODO: Check this works
         );
         player.connection.sendPacket(openWindow);
         updateAllContainerContents();
@@ -201,7 +199,7 @@ public class GooeyContainer extends Container {
     }
 
     @Override
-    public ItemStack slotClick(int slot, int dragType, ClickType clickType, EntityPlayer playerSP) {
+    public ItemStack slotClick(int slot, int dragType, ClickType clickType, PlayerEntity playerSP) {
         // Don't do anything if user is only clicking edge of UI.
         if (slot == -1) {
             return ItemStack.EMPTY;
@@ -414,7 +412,7 @@ public class GooeyContainer extends Container {
 
     private boolean isSlotOccupied(int slot) {
         if (isSlotInPlayerInventory(slot) && inventoryTemplate == null) {
-            return player.inventoryContainer.inventorySlots.get(getTemplateIndex(slot) + 9).getHasStack();
+            return player.openContainer.inventorySlots.get(getTemplateIndex(slot) + 9).getHasStack();
         } else {
             return getButton(slot) != null;
         }
@@ -425,22 +423,22 @@ public class GooeyContainer extends Container {
     }
 
     private void updateAllContainerContents() {
-        player.sendAllContents(player.openContainer, inventoryItemStacks);
+        player.sendAllContents(player.openContainer, this.getInventory());
 
         /*
          * Detects changes in the player's inventory and updates them. This is to prevent desyncs if a player
          * gets items added to their inventory while in the user interface.
          */
-        player.inventoryContainer.detectAndSendChanges();
+        player.container.detectAndSendChanges();
         if (inventoryTemplate != null) {
-            player.sendAllContents(player.inventoryContainer, inventoryTemplate.getFullDisplay(player));
+            player.sendAllContents(player.container, inventoryTemplate.getFullDisplay(player));
         } else {
-            player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+            player.sendAllContents(player.container, player.container.getInventory());
         }
     }
 
     private void setPlayersCursor(ItemStack stack) {
-        SPacketSetSlot setCursorSlot = new SPacketSetSlot(-1, 0, stack);
+        SSetSlotPacket setCursorSlot = new SSetSlotPacket(-1, 0, stack);
         player.connection.sendPacket(setCursorSlot);
     }
 
@@ -460,12 +458,12 @@ public class GooeyContainer extends Container {
     }
 
     @Override
-    public boolean canInteractWith(EntityPlayer player) {
+    public boolean canInteractWith(PlayerEntity player) {
         return true;
     }
 
     @Override
-    public void onContainerClosed(EntityPlayer playerIn) {
+    public void onContainerClosed(PlayerEntity playerIn) {
         if (closing) return;
 
         closing = true;
@@ -479,8 +477,8 @@ public class GooeyContainer extends Container {
         }
         MinecraftForge.EVENT_BUS.unregister(this);
 
-        player.inventoryContainer.detectAndSendChanges();
-        player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
+        player.container.detectAndSendChanges();
+        player.sendAllContents(player.container, player.container.getInventory());
     }
 
 }
