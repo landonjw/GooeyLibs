@@ -87,7 +87,7 @@ public class InventoryHelper {
      * @return an itemstack at the given inventory template slot location, or ItemStack.EMPTY if no item in slot
      */
     @Nonnull
-    public ItemStack getStackAtSlot(@Nonnull EntityPlayerMP player, int inventorySlot) {
+    public static ItemStack getStackAtSlot(@Nonnull EntityPlayerMP player, int inventorySlot) {
         /*
          * Offset hotbar and main inventory since their implementation differs from concept of template slots.
          * Hotbar in inventory is always placed before main inventory slots in player inventory, where
