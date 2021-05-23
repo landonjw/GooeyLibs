@@ -56,12 +56,14 @@ public class GooeyContainer extends Container {
     }
 
     private void bindPage() {
-        page.subscribe(this, () -> {
-            unbindSlots();
-            inventoryTemplate = page.getInventoryTemplate().orElse(null);
-            bindSlots();
-            openWindow();
-        });
+        page.subscribe(this, this::refresh);
+    }
+
+    public void refresh() {
+        unbindSlots();
+        inventoryTemplate = page.getInventoryTemplate().orElse(null);
+        bindSlots();
+        openWindow();
     }
 
     private void bindSlots() {
@@ -79,9 +81,16 @@ public class GooeyContainer extends Container {
          * Adding these slots are necessary to stop Sponge from having an aneurysm about missing slots,
          */
         if (inventoryTemplate == null) {
-            for (int i = 0; i < 36; i++) {
-                GooeyButton button = GooeyButton.of(player.inventoryContainer.inventoryItemStacks.get(9 + i));
-                inventorySlots.add(new TemplateSlot(button, i, 0, 0));
+            // Sets the slots for the main inventory.
+            for (int i = 9; i < 36; i++) {
+                GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
+                inventorySlots.add(new TemplateSlot(button, i - 9, 0, 0));
+                inventoryItemStacks.add(button.getDisplay());
+            }
+            // Sets the slots for the hotbar.
+            for (int i = 0; i < 9; i++) {
+                GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
+                inventorySlots.add(new TemplateSlot(button, i + 27, 0, 0));
                 inventoryItemStacks.add(button.getDisplay());
             }
         } else {
@@ -472,11 +481,6 @@ public class GooeyContainer extends Container {
 
         player.inventoryContainer.detectAndSendChanges();
         player.sendAllContents(player.inventoryContainer, player.inventoryContainer.inventoryItemStacks);
-    }
-
-    @Override
-    public void detectAndSendChanges() {
-        super.detectAndSendChanges();
     }
 
 }
