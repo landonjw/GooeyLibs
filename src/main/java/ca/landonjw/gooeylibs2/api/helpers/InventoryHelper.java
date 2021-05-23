@@ -24,7 +24,7 @@ public class InventoryHelper {
      *                      to get this, you should typically use ButtonAction#getInventorySlot.
      * @param stack         the itemstack to set in the player's inventory.
      */
-    public static void setInventorySlot(@Nonnull EntityPlayerMP player, int inventorySlot, @Nullable ItemStack stack) {
+    public static void setToInventorySlot(@Nonnull EntityPlayerMP player, int inventorySlot, @Nullable ItemStack stack) {
         if (inventorySlot < 0) return;
 
         // Empty slots are always populated with ItemStack.EMPTY instead of null.
@@ -56,8 +56,8 @@ public class InventoryHelper {
      * @param inventoryCol the column to set stack in, starting at 0
      * @param stack        the itemstack to set in the player's inventory.
      */
-    public static void setInventorySlot(@Nonnull EntityPlayerMP player, int inventoryRow, int inventoryCol, @Nullable ItemStack stack) {
-        setInventorySlot(player, inventoryRow * 9 + inventoryCol, stack);
+    public static void setToInventorySlot(@Nonnull EntityPlayerMP player, int inventoryRow, int inventoryCol, @Nullable ItemStack stack) {
+        setToInventorySlot(player, inventoryRow * 9 + inventoryCol, stack);
     }
 
     /**
@@ -67,7 +67,7 @@ public class InventoryHelper {
      * @param player the player to add inventory stack to
      * @param stack  the itemstack to add to player's inventory
      */
-    public static void addInventorySlot(@Nonnull EntityPlayerMP player, @Nonnull ItemStack stack) {
+    public static void addToInventorySlot(@Nonnull EntityPlayerMP player, @Nonnull ItemStack stack) {
         if (stack == ItemStack.EMPTY) return;
 
         player.inventory.addItemStackToInventory(stack.copy());
