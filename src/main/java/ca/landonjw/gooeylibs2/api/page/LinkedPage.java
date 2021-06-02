@@ -34,7 +34,7 @@ public class LinkedPage extends GooeyPage {
         this.next = next;
     }
 
-    public Page getPrevious() {
+    public LinkedPage getPrevious() {
         return previous;
     }
 
@@ -43,7 +43,7 @@ public class LinkedPage extends GooeyPage {
         update();
     }
 
-    public Page getNext() {
+    public LinkedPage getNext() {
         return next;
     }
 

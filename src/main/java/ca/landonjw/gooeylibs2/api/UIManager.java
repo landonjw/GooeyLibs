@@ -30,18 +30,18 @@ public class UIManager {
     }
 
     public static void openUIForcefully(@Nonnull EntityPlayerMP player, @Nonnull Page page) {
-        if (player.openContainer instanceof GooeyContainer) {
-            // Delay the open to allow sponge's annoying mixins to process previous container and not have aneurysm
-            Task.builder()
-                    .execute(() -> {
-                        GooeyContainer container = new GooeyContainer(player, page);
-                        container.open();
-                    })
-                    .build();
-        } else {
-            GooeyContainer container = new GooeyContainer(player, page);
-            container.open();
-        }
+        /* This delays the open until the end of the next tick because Sponge's implementation
+         * likes to mixin to everything and introduce side effects.
+         *
+         * In this case, it throws an obscure NPE through one of it's hooks if the player
+         * has a container open when this executes, unless it's executed on tick end.
+         */
+        Task.builder()
+                .execute(() -> {
+                    GooeyContainer container = new GooeyContainer(player, page);
+                    container.open();
+                })
+                .build();
     }
 
     public static void closeUI(@Nonnull EntityPlayerMP player) {
