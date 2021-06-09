@@ -33,6 +33,12 @@ public class GooeyButton extends ButtonBase {
                 .display(stack)
                 .build();
     }
+    public static GooeyButton of(ItemStack stack, String title) {
+        return builder()
+                .display(stack)
+                .title(title)
+                .build();
+    }
 
     public static class Builder {
 
