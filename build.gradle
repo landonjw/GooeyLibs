@@ -1,66 +1,44 @@
 buildscript {
     repositories {
-        jcenter()
         mavenCentral()
-        maven {
-            name = "forge"
-            url = "https://maven.minecraftforge.net"
-        }
+        maven { url = 'https://files.minecraftforge.net/maven' }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:3.+'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '4.1.+', changing: true
     }
 }
 
-version = modVersion
-group = modGroup
+plugins {
+    id 'java'
+    id 'maven'
+}
 
-apply plugin: 'java'
 apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'eclipse'
+apply plugin: 'java'
 apply plugin: 'maven'
-
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = '1.8'
 
 minecraft {
     mappings channel: 'snapshot', version: '20171003-1.12'
+}
 
-    runs {
-        client {
-            workingDirectory project.file('run')
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-
-        server {
-
-            // Recommended logging data for a userdev environment
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-
-            // Recommended logging level for the console
-            property 'forge.logging.console.level', 'debug'
-        }
-    }
+repositories {
+    jcenter()
+    mavenCentral()
 }
 
 dependencies {
     minecraft 'net.minecraftforge:forge:1.12.2-14.23.5.2854'
 }
 
-// Example for how to get properties into the manifest for reading by the runtime..
 jar {
     manifest {
         attributes([
-                "Specification-Title": modBaseName,
-                "Specification-Vendor": "landonjw",
-                "Specification-Version": "1", // We are version 1 of ourselves
-                "Implementation-Title": project.name,
-                "Implementation-Version": "${version}",
-                "Implementation-Vendor" : "landonjw",
+                "Specification-Title"     : "kotlinmon",
+                "Specification-Vendor"    : "landonjw",
+                "Specification-Version"   : "1", // We are version 1 of ourselves
+                "Implementation-Title"    : project.name,
+                "Implementation-Version"  : project.version,
+                "Implementation-Vendor"   : "landonjw",
                 "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         ])
     }
