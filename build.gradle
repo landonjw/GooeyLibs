@@ -18,7 +18,7 @@ apply plugin: 'java'
 apply plugin: 'maven'
 
 minecraft {
-    mappings channel: 'snapshot', version: '20171003-1.12'
+    mappings channel: "stable", version: "39-1.12"
 }
 
 repositories {
