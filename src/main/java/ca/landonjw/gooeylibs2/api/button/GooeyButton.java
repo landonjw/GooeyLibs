@@ -9,6 +9,7 @@ import net.minecraft.nbt.NBTTagString;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -50,7 +51,7 @@ public class GooeyButton extends ButtonBase {
         protected String title;
         protected Collection<String> lore = Lists.newArrayList();
         protected Consumer<ButtonAction> onClick;
-        protected List<EnumFlag> hideFlags;
+        protected List<EnumFlag> hideFlags = new ArrayList<>();
 
         public Builder display(@Nonnull ItemStack display) {
             this.display = display;
