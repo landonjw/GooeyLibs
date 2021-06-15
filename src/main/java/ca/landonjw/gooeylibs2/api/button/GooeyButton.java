@@ -106,7 +106,7 @@ public class GooeyButton extends ButtonBase {
                 display.getOrCreateSubCompound("display").setTag("Lore", nbtLore);
             }
             if (!this.hideFlags.isEmpty() && display.hasTagCompound()) {
-                if (this.hideFlags.contains(EnumFlag.PIXELMON)) {
+                if (this.hideFlags.contains(EnumFlag.PIXELMON) || this.hideFlags.contains(EnumFlag.ALL)) {
                     display.getTagCompound().setString("tooltip", "");
                 }
                 int value = 0;
