@@ -47,7 +47,7 @@ dependencies {
 jar {
     manifest {
         attributes([
-                "Specification-Title"     : "kotlinmon",
+                "Specification-Title"     : "gooeylibs",
                 "Specification-Vendor"    : "landonjw",
                 "Specification-Version"   : "1", // We are version 1 of ourselves
                 "Implementation-Title"    : project.name,
