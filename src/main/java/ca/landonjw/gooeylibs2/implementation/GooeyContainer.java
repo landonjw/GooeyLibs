@@ -101,8 +101,8 @@ public class GooeyContainer extends Container {
                     updateSlotStack(index, getItemAtSlot(itemSlot), true);
                 });
                 inventorySlots.add(inventoryTemplate.getSlot(i));
-                inventoryItemStacks.add(inventoryTemplate.getSlot(i).getStack());
             }
+            inventoryItemStacks.addAll(inventoryTemplate.getDisplayStacks());
         }
     }
 
@@ -278,6 +278,7 @@ public class GooeyContainer extends Container {
             ButtonAction action = new ButtonAction(player, buttonClickType, clickedButton, page.getTemplate(), page, slot);
             clickedButton.onClick(action);
         }
+        updateAllContainerContents();
         return ItemStack.EMPTY;
     }
 
