@@ -1,9 +1,7 @@
 package ca.landonjw.gooeylibs2.api.button;
 
-import ca.landonjw.gooeylibs2.api.template.LineType;
 import com.google.common.collect.Lists;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 
@@ -54,7 +52,7 @@ public class GooeyButton extends ButtonBase {
         protected List<EnumFlag> hideFlags = new ArrayList<>();
 
         public Builder display(@Nonnull ItemStack display) {
-            this.display = display;
+            this.display = display.copy();
             return this;
         }
 
