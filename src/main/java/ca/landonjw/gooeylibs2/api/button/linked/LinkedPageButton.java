@@ -2,6 +2,7 @@ package ca.landonjw.gooeylibs2.api.button.linked;
 
 import ca.landonjw.gooeylibs2.api.UIManager;
 import ca.landonjw.gooeylibs2.api.button.ButtonAction;
+import ca.landonjw.gooeylibs2.api.button.EnumFlag;
 import ca.landonjw.gooeylibs2.api.button.GooeyButton;
 import ca.landonjw.gooeylibs2.api.page.LinkedPage;
 import ca.landonjw.gooeylibs2.api.page.Page;
@@ -9,6 +10,7 @@ import net.minecraft.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.function.Consumer;
 
 public class LinkedPageButton extends GooeyButton {
@@ -55,6 +57,24 @@ public class LinkedPageButton extends GooeyButton {
         @Override
         public Builder title(@Nullable String title) {
             super.title(title);
+            return this;
+        }
+
+        @Override
+        public Builder lore(@Nullable Collection<String> lore) {
+            super.lore(lore);
+            return this;
+        }
+
+        @Override
+        public Builder hideFlags(EnumFlag... flags) {
+            super.hideFlags(flags);
+            return this;
+        }
+
+        @Override
+        public Builder onClick(@Nullable Runnable behaviour) {
+            super.onClick(behaviour);
             return this;
         }
 
