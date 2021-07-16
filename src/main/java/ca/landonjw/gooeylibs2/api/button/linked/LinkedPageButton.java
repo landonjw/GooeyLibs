@@ -2,7 +2,7 @@ package ca.landonjw.gooeylibs2.api.button.linked;
 
 import ca.landonjw.gooeylibs2.api.UIManager;
 import ca.landonjw.gooeylibs2.api.button.ButtonAction;
-import ca.landonjw.gooeylibs2.api.button.EnumFlag;
+import ca.landonjw.gooeylibs2.api.button.FlagType;
 import ca.landonjw.gooeylibs2.api.button.GooeyButton;
 import ca.landonjw.gooeylibs2.api.page.LinkedPage;
 import ca.landonjw.gooeylibs2.api.page.Page;
@@ -67,7 +67,8 @@ public class LinkedPageButton extends GooeyButton {
         }
 
         @Override
-        public Builder hideFlags(EnumFlag... flags) {
+        public Builder hideFlags(FlagType... flags)
+        {
             super.hideFlags(flags);
             return this;
         }

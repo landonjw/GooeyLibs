@@ -1,7 +1,7 @@
 package ca.landonjw.gooeylibs2.api.button.moveable;
 
 import ca.landonjw.gooeylibs2.api.button.ButtonAction;
-import ca.landonjw.gooeylibs2.api.button.EnumFlag;
+import ca.landonjw.gooeylibs2.api.button.FlagType;
 import ca.landonjw.gooeylibs2.api.button.GooeyButton;
 import net.minecraft.item.ItemStack;
 
@@ -60,7 +60,8 @@ public class MovableButton extends GooeyButton implements Movable {
             return this;
         }
 
-        public Builder hideFlags(EnumFlag... flags) {
+        public Builder hideFlags(FlagType... flags)
+        {
             super.hideFlags(flags);
             return this;
         }

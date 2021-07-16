@@ -49,7 +49,7 @@ public class GooeyButton extends ButtonBase {
         protected String title;
         protected Collection<String> lore = Lists.newArrayList();
         protected Consumer<ButtonAction> onClick;
-        protected List<EnumFlag> hideFlags = new ArrayList<>();
+        protected List<FlagType> hideFlags = new ArrayList<>();
 
         public Builder display(@Nonnull ItemStack display) {
             this.display = display.copy();
@@ -66,7 +66,8 @@ public class GooeyButton extends ButtonBase {
             return this;
         }
 
-        public Builder hideFlags(EnumFlag... flags) {
+        public Builder hideFlags(FlagType... flags)
+        {
             this.hideFlags = Arrays.asList(flags);
             return this;
         }
@@ -103,12 +104,19 @@ public class GooeyButton extends ButtonBase {
                 }
                 display.getOrCreateSubCompound("display").setTag("Lore", nbtLore);
             }
-            if (!this.hideFlags.isEmpty() && display.hasTagCompound()) {
-                if (this.hideFlags.contains(EnumFlag.PIXELMON) || this.hideFlags.contains(EnumFlag.ALL)) {
+            if (!this.hideFlags.isEmpty() && display.hasTagCompound())
+            {
+                if (this.hideFlags.contains(FlagType.Reforged) || this.hideFlags.contains(FlagType.All))
+                {
                     display.getTagCompound().setString("tooltip", "");
                 }
+                if (this.hideFlags.contains(FlagType.Generations) || this.hideFlags.contains(FlagType.All))
+                {
+                    display.getTagCompound().setBoolean("HideTooltip", true);
+                }
                 int value = 0;
-                for (EnumFlag flag : this.hideFlags) {
+                for (FlagType flag : this.hideFlags)
+                {
                     value += flag.getValue();
                 }
                 display.getTagCompound().setInteger("HideFlags", value);
