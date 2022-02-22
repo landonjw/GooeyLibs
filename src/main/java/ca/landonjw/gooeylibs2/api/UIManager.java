@@ -30,18 +30,13 @@ public class UIManager {
     }
 
     public static void openUIForcefully(@Nonnull ServerPlayerEntity player, @Nonnull Page page) {
-        if (player.openContainer instanceof GooeyContainer) {
-            // Delay the open to allow sponge's annoying mixins to process previous container and not have aneurysm
-            Task.builder()
-                    .execute(() -> {
-                        GooeyContainer container = new GooeyContainer(player, page);
-                        container.open();
-                    })
-                    .build();
-        } else {
-            GooeyContainer container = new GooeyContainer(player, page);
-            container.open();
-        }
+        // Delay the open to allow sponge's annoying mixins to process previous container and not have aneurysm
+        Task.builder()
+                .execute(() -> {
+                    GooeyContainer container = new GooeyContainer(player, page);
+                    container.open();
+                })
+                .build();
     }
 
     public static void closeUI(@Nonnull ServerPlayerEntity player) {

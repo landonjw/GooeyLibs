@@ -2,10 +2,19 @@ package ca.landonjw.gooeylibs2.api.page;
 
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
+import net.minecraft.util.text.IFormattableTextComponent;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Represents a page that is intended for pagination.
@@ -16,15 +25,15 @@ import java.util.function.Consumer;
  */
 public class LinkedPage extends GooeyPage {
 
-    public static final String CURRENT_PAGE_PLACEHOLDER = "{current}";
-    public static final String TOTAL_PAGES_PLACEHOLDER = "{total}";
+    public static final String CURRENT_PAGE_PLACEHOLDER = "\\{current}";
+    public static final String TOTAL_PAGES_PLACEHOLDER = "\\{total}";
 
     private LinkedPage previous;
     private LinkedPage next;
 
     public LinkedPage(@Nonnull Template template,
                       @Nullable InventoryTemplate inventoryTemplate,
-                      @Nullable String title,
+                      @Nullable ITextComponent title,
                       @Nullable Consumer<PageAction> onOpen,
                       @Nullable Consumer<PageAction> onClose,
                       @Nullable LinkedPage previous,
@@ -34,7 +43,7 @@ public class LinkedPage extends GooeyPage {
         this.next = next;
     }
 
-    public Page getPrevious() {
+    public LinkedPage getPrevious() {
         return previous;
     }
 
@@ -43,7 +52,7 @@ public class LinkedPage extends GooeyPage {
         update();
     }
 
-    public Page getNext() {
+    public LinkedPage getNext() {
         return next;
     }
 
@@ -61,10 +70,12 @@ public class LinkedPage extends GooeyPage {
     }
 
     @Override
-    public String getTitle() {
-        return super.getTitle()
-                .replace(CURRENT_PAGE_PLACEHOLDER, "" + getCurrentPage())
-                .replace(TOTAL_PAGES_PLACEHOLDER, "" + getTotalPages());
+    public ITextComponent getTitle() {
+        return replace(
+                replace(super.getTitle(), Pattern.compile(CURRENT_PAGE_PLACEHOLDER, Pattern.LITERAL), "" + getCurrentPage()),
+                Pattern.compile(TOTAL_PAGES_PLACEHOLDER, Pattern.LITERAL),
+                "" + getTotalPages()
+        );
     }
 
     @Override
@@ -82,7 +93,13 @@ public class LinkedPage extends GooeyPage {
         protected LinkedPage nextPage;
 
         @Override
-        public Builder title(@Nullable String title) {
+        public Builder title(@Nullable ITextComponent title) {
+            super.title(title);
+            return this;
+        }
+
+        @Override
+        public GooeyPage.Builder title(@Nullable Component title) {
             super.title(title);
             return this;
         }
@@ -138,6 +155,39 @@ public class LinkedPage extends GooeyPage {
             return new LinkedPage(template, inventoryTemplate, title, onOpen, onClose, previousPage, nextPage);
         }
 
+    }
+
+    private ITextComponent replace(ITextComponent parent, Pattern pattern, String replacement) {
+        IFormattableTextComponent result;
+        if(parent instanceof StringTextComponent) {
+            StringTextComponent stc = (StringTextComponent) parent;
+            String content = stc.getText();
+            if (!content.isEmpty()) {
+                Matcher matcher = pattern.matcher(content);
+                if (matcher.find()) {
+                    content = matcher.replaceAll(replacement);
+                }
+
+                result = new StringTextComponent(content);
+                result.setStyle(parent.getStyle());
+            } else {
+                result = new StringTextComponent(stc.getText());
+                result.setStyle(parent.getStyle());
+            }
+        } else {
+            result = parent.copyRaw();
+            result.setStyle(parent.getStyle());
+        }
+
+        List<StringTextComponent> children = parent.getSiblings().stream()
+                .filter(c -> c instanceof StringTextComponent)
+                .map(StringTextComponent.class::cast)
+                .collect(Collectors.toList());
+        for(StringTextComponent child : children) {
+            result.appendSibling(this.replace(child, pattern, replacement));
+        }
+
+        return result;
     }
 
 }
