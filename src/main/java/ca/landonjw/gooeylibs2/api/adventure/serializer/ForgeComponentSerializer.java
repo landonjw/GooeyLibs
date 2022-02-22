@@ -34,35 +34,4 @@ public class ForgeComponentSerializer implements ComponentSerializer<Component, 
             throw new IllegalStateException("Failed to serialize component to native");
         }
     }
-
-//    private ITextComponent translate(Component parent) {
-//        StringTextComponent result = this.construct(parent);
-//        if(!parent.children().isEmpty()) {
-//            this.translate$recursive(result, parent);
-//        }
-//
-//        return result;
-//    }
-//
-//    private void translate$recursive(ITextComponent result, Component parent) {
-//        if(parent.children().isEmpty()) {
-//            return;
-//        }
-//
-//        List<TextComponent> children = parent.children().stream()
-//                .filter(c -> c instanceof TextComponent)
-//                .map(c -> (TextComponent) c)
-//                .collect(Collectors.toList());
-//        for(TextComponent child : children) {
-//            result.appendSibling(this.translate(child));
-//            this.translate$recursive(result, child);
-//        }
-//    }
-//
-//    private StringTextComponent construct(Component focus) {
-//        StringTextComponent component = new StringTextComponent(focus.content());
-//        component.setStyle(StyleTranslator.translate(focus.style()));
-//
-//        return component;
-//    }
 }
