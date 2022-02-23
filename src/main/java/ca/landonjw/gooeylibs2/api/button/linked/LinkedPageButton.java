@@ -5,7 +5,9 @@ import ca.landonjw.gooeylibs2.api.button.ButtonAction;
 import ca.landonjw.gooeylibs2.api.button.GooeyButton;
 import ca.landonjw.gooeylibs2.api.page.LinkedPage;
 import ca.landonjw.gooeylibs2.api.page.Page;
+import net.kyori.adventure.text.Component;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,6 +56,18 @@ public class LinkedPageButton extends GooeyButton {
 
         @Override
         public Builder title(@Nullable String title) {
+            super.title(title);
+            return this;
+        }
+
+        @Override
+        public Builder title(@Nullable ITextComponent title) {
+            super.title(title);
+            return this;
+        }
+
+        @Override
+        public Builder title(@Nullable Component title) {
             super.title(title);
             return this;
         }

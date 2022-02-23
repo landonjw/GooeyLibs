@@ -21,7 +21,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.server.SOpenWindowPacket;
 import net.minecraft.network.play.server.SSetSlotPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 
 import javax.annotation.Nonnull;
@@ -183,7 +182,7 @@ public class GooeyContainer extends Container {
         SOpenWindowPacket openWindow = new SOpenWindowPacket(
                 player.currentWindowId,
                 page.getTemplate().getTemplateType().getContainerType(page.getTemplate()),
-                new StringTextComponent(page.getTitle())
+                page.getTitle()
 //                page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE ? 0 : page.getTemplate().getSize() TODO: Check this works
         );
         player.connection.sendPacket(openWindow);
@@ -201,7 +200,7 @@ public class GooeyContainer extends Container {
     @Override
     public ItemStack slotClick(int slot, int dragType, ClickType clickType, PlayerEntity playerSP) {
         // Don't do anything if user is only clicking edge of UI.
-        if (slot == -1) {
+        if (slot == -1 || slot == -999) {
             return ItemStack.EMPTY;
         }
 
@@ -249,7 +248,6 @@ public class GooeyContainer extends Container {
         }
 
         patchDesyncs(slot, clickType);
-
         Button clickedButton = getButton(slot);
         /*
          *  If the button being interacted with is moveable, or there is currently a moveable button on the cursor,

@@ -1,8 +1,12 @@
 package ca.landonjw.gooeylibs2.api.page;
 
+import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import ca.landonjw.gooeylibs2.api.data.EventEmitter;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
+import net.kyori.adventure.text.Component;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,14 +18,14 @@ public abstract class PageBase implements Page {
     private final EventEmitter<Page> eventEmitter = new EventEmitter<>();
     private Template template;
     private InventoryTemplate inventoryTemplate;
-    private String title;
+    private ITextComponent title;
 
     public PageBase(@Nonnull Template template,
                     @Nullable InventoryTemplate inventoryTemplate,
-                    @Nullable String title) {
+                    @Nullable ITextComponent title) {
         this.template = template;
         this.inventoryTemplate = inventoryTemplate;
-        this.title = (title != null) ? title : "";
+        this.title = (title != null) ? title : StringTextComponent.EMPTY;
     }
 
     public Template getTemplate() {
@@ -43,13 +47,25 @@ public abstract class PageBase implements Page {
         this.inventoryTemplate = inventoryTemplate;
     }
 
-    public String getTitle() {
-        return title;
+    public ITextComponent getTitle() {
+        return this.title;
     }
 
     public void setTitle(@Nullable String title) {
-        this.title = (title == null) ? "" : title;
+        this.setTitle(title == null ? null : new StringTextComponent(title));
+    }
+
+    public void setTitle(@Nullable ITextComponent title) {
+        this.title = (title == null) ? StringTextComponent.EMPTY : title;
         update();
+    }
+
+    public void setTitle(@Nullable Component title) {
+        if(title == null) {
+            return;
+        }
+
+        this.setTitle(ForgeTranslator.asMinecraft(title));
     }
 
     public void subscribe(@Nonnull Object observer, @Nonnull Consumer<Page> consumer) {

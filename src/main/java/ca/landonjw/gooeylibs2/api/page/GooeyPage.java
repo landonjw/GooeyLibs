@@ -1,7 +1,11 @@
 package ca.landonjw.gooeylibs2.api.page;
 
+import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
+import net.kyori.adventure.text.Component;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -13,7 +17,7 @@ public class GooeyPage extends PageBase {
 
     public GooeyPage(@Nonnull Template template,
                      @Nullable InventoryTemplate inventoryTemplate,
-                     @Nullable String title,
+                     @Nullable ITextComponent title,
                      @Nullable Consumer<PageAction> onOpen,
                      @Nullable Consumer<PageAction> onClose) {
         super(template, inventoryTemplate, title);
@@ -37,14 +41,30 @@ public class GooeyPage extends PageBase {
 
     public static class Builder {
 
-        protected String title;
+        protected ITextComponent title;
         protected Template template;
         protected InventoryTemplate inventoryTemplate;
         protected Consumer<PageAction> onOpen, onClose;
 
         public Builder title(@Nullable String title) {
+            if(title == null) {
+                return this;
+            }
+
+            return this.title(new StringTextComponent(title));
+        }
+
+        public Builder title(@Nullable ITextComponent title) {
             this.title = title;
             return this;
+        }
+
+        public Builder title(@Nullable Component title) {
+            if(title == null) {
+                return this;
+            }
+
+            return this.title(ForgeTranslator.asMinecraft(title));
         }
 
         public Builder template(@Nonnull Template template) {
