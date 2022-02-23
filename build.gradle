@@ -90,7 +90,9 @@ jar.finalizedBy('reobfJar')
 //publish.dependsOn('reobfJar')
 
 shadowJar {
-    archiveName = "GooeyLibs-1.16.5-${version}.jar"
+    archiveBaseName.set("GooeyLibs")
+    archiveClassifier.set("")
+    archiveVersion.set("${project.mcversion}-${archiveVersion.get()}")
 
     include {
         dependencies {
@@ -116,6 +118,8 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             artifact shadowJar
+            artifactId "GooeyLibs"
+            version "${project.mcversion}-${version}"
         }
     }
 }
