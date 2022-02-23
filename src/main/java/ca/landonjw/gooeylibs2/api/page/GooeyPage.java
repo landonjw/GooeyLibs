@@ -4,8 +4,8 @@ import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -45,6 +45,14 @@ public class GooeyPage extends PageBase {
         protected Template template;
         protected InventoryTemplate inventoryTemplate;
         protected Consumer<PageAction> onOpen, onClose;
+
+        public Builder title(@Nullable String title) {
+            if(title == null) {
+                return this;
+            }
+
+            return this.title(new StringTextComponent(title));
+        }
 
         public Builder title(@Nullable ITextComponent title) {
             this.title = title;

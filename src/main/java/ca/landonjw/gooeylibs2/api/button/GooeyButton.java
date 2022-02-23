@@ -59,6 +59,14 @@ public class GooeyButton extends ButtonBase {
             return this;
         }
 
+        public Builder title(@Nullable String title) {
+            if(title == null) {
+                return this;
+            }
+
+            return this.title(new StringTextComponent(title));
+        }
+
         public Builder title(@Nullable ITextComponent title) {
             this.title = title;
             return this;
@@ -68,18 +76,35 @@ public class GooeyButton extends ButtonBase {
             return this.title(ForgeTranslator.asMinecraft(title));
         }
 
-        public Builder lore(@Nullable Collection<ITextComponent> lore) {
-            this.lore = (lore != null) ? lore : Lists.newArrayList();
-            return this;
-        }
-
-        public Builder lore(@Nullable List<Component> lore) {
+        public Builder lore(@Nullable Collection<String> lore) {
             if(lore == null) {
-                this.lore = Lists.newArrayList();
                 return this;
             }
 
-            return this.lore(lore.stream().map(ForgeTranslator::asMinecraft).collect(Collectors.toList()));
+            return this.lore(String.class, lore);
+        }
+
+        @SuppressWarnings("unchecked")
+        public <T> Builder lore(Class<T> type, @Nullable Collection<T> lore) {
+            if(lore == null) {
+                return this;
+            }
+
+            if(ITextComponent.class.isAssignableFrom(type) || Component.class.isAssignableFrom(type)) {
+                if(Component.class.isAssignableFrom(type)) {
+                    this.lore = lore.stream()
+                            .map(entry -> (Component) entry)
+                            .map(ForgeTranslator::asMinecraft)
+                            .collect(Collectors.toList());
+                } else {
+                    this.lore = (Collection<ITextComponent>) lore;
+                }
+                return this;
+            } else if(String.class.isAssignableFrom(type)) {
+                return this.lore((Collection<String>) lore);
+            }
+
+            throw new UnsupportedOperationException("Invalid Type: " + type.getName());
         }
 
         public Builder hideFlags(FlagType... flags) {

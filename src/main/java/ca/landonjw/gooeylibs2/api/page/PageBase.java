@@ -5,7 +5,6 @@ import ca.landonjw.gooeylibs2.api.data.EventEmitter;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 
@@ -50,6 +49,10 @@ public abstract class PageBase implements Page {
 
     public ITextComponent getTitle() {
         return this.title;
+    }
+
+    public void setTitle(@Nullable String title) {
+        this.setTitle(title == null ? null : new StringTextComponent(title));
     }
 
     public void setTitle(@Nullable ITextComponent title) {

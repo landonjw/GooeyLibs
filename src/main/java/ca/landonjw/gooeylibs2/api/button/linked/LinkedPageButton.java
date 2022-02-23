@@ -55,13 +55,19 @@ public class LinkedPageButton extends GooeyButton {
         }
 
         @Override
+        public Builder title(@Nullable String title) {
+            super.title(title);
+            return this;
+        }
+
+        @Override
         public Builder title(@Nullable ITextComponent title) {
             super.title(title);
             return this;
         }
 
         @Override
-        public GooeyButton.Builder title(@Nullable Component title) {
+        public Builder title(@Nullable Component title) {
             super.title(title);
             return this;
         }

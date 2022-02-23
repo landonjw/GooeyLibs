@@ -68,18 +68,14 @@ public class MovableButton extends GooeyButton implements Movable {
             return this.title(ForgeTranslator.asMinecraft(title));
         }
 
-        public Builder lore(@Nullable Collection<ITextComponent> lore) {
+        public Builder lore(@Nullable Collection<String> lore) {
             super.lore(lore);
             return this;
         }
 
-        public GooeyButton.Builder lore(@Nullable List<Component> lore) {
-            if(lore == null) {
-                this.lore = Lists.newArrayList();
-                return this;
-            }
-
-            return this.lore(lore.stream().map(ForgeTranslator::asMinecraft).collect(Collectors.toList()));
+        public <T> Builder lore(Class<T> type, @Nullable Collection<T> lore) {
+            super.lore(type, lore);
+            return this;
         }
 
         public Builder onClick(@Nullable Consumer<ButtonAction> behaviour) {

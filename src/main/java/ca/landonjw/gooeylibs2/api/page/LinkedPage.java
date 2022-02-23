@@ -3,7 +3,6 @@ package ca.landonjw.gooeylibs2.api.page;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -25,8 +24,8 @@ import java.util.stream.Collectors;
  */
 public class LinkedPage extends GooeyPage {
 
-    public static final String CURRENT_PAGE_PLACEHOLDER = "\\{current}";
-    public static final String TOTAL_PAGES_PLACEHOLDER = "\\{total}";
+    public static final String CURRENT_PAGE_PLACEHOLDER = "{current}";
+    public static final String TOTAL_PAGES_PLACEHOLDER = "{total}";
 
     private LinkedPage previous;
     private LinkedPage next;
@@ -93,13 +92,19 @@ public class LinkedPage extends GooeyPage {
         protected LinkedPage nextPage;
 
         @Override
+        public Builder title(@Nullable String title) {
+            super.title(title);
+            return this;
+        }
+
+        @Override
         public Builder title(@Nullable ITextComponent title) {
             super.title(title);
             return this;
         }
 
         @Override
-        public GooeyPage.Builder title(@Nullable Component title) {
+        public Builder title(@Nullable Component title) {
             super.title(title);
             return this;
         }
