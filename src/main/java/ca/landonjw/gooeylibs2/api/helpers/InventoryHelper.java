@@ -2,8 +2,8 @@ package ca.landonjw.gooeylibs2.api.helpers;
 
 import ca.landonjw.gooeylibs2.implementation.GooeyContainer;
 import ca.landonjw.gooeylibs2.implementation.tasks.Task;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,7 +24,7 @@ public class InventoryHelper {
      *                      to get this, you should typically use ButtonAction#getInventorySlot.
      * @param stack         the itemstack to set in the player's inventory.
      */
-    public static void setToInventorySlot(@Nonnull ServerPlayerEntity player, int inventorySlot, @Nullable ItemStack stack) {
+    public static void setToInventorySlot(@Nonnull ServerPlayer player, int inventorySlot, @Nullable ItemStack stack) {
         if (inventorySlot < 0) return;
 
         // Empty slots are always populated with ItemStack.EMPTY instead of null.
@@ -36,13 +36,13 @@ public class InventoryHelper {
          * the hotbar in template is always after the main inventory slots.
          */
         if (inventorySlot >= 27) {
-            player.inventory.setInventorySlotContents(inventorySlot - 27, stack.copy());
+            player.getInventory().setItem(inventorySlot - 27, stack.copy());
         } else {
-            player.inventory.setInventorySlotContents(inventorySlot + 9, stack.copy());
+            player.getInventory().setItem(inventorySlot + 9, stack.copy());
         }
 
-        if (player.openContainer instanceof GooeyContainer) {
-            GooeyContainer container = (GooeyContainer) player.openContainer;
+        if (player.containerMenu instanceof GooeyContainer) {
+            GooeyContainer container = (GooeyContainer) player.containerMenu;
             Task.builder().execute(container::refresh).build();
         }
     }
@@ -56,7 +56,7 @@ public class InventoryHelper {
      * @param inventoryCol the column to set stack in, starting at 0
      * @param stack        the itemstack to set in the player's inventory.
      */
-    public static void setToInventorySlot(@Nonnull ServerPlayerEntity player, int inventoryRow, int inventoryCol, @Nullable ItemStack stack) {
+    public static void setToInventorySlot(@Nonnull ServerPlayer player, int inventoryRow, int inventoryCol, @Nullable ItemStack stack) {
         setToInventorySlot(player, inventoryRow * 9 + inventoryCol, stack);
     }
 
@@ -67,13 +67,13 @@ public class InventoryHelper {
      * @param player the player to add inventory stack to
      * @param stack  the itemstack to add to player's inventory
      */
-    public static void addToInventorySlot(@Nonnull ServerPlayerEntity player, @Nonnull ItemStack stack) {
+    public static void addToInventorySlot(@Nonnull ServerPlayer player, @Nonnull ItemStack stack) {
         if (stack == ItemStack.EMPTY) return;
 
-        player.inventory.addItemStackToInventory(stack.copy());
+        player.getInventory().add(stack.copy());
 
-        if (player.openContainer instanceof GooeyContainer) {
-            GooeyContainer container = (GooeyContainer) player.openContainer;
+        if (player.containerMenu instanceof GooeyContainer) {
+            GooeyContainer container = (GooeyContainer) player.containerMenu;
             Task.builder().execute(container::refresh).build();
         }
     }
@@ -87,16 +87,16 @@ public class InventoryHelper {
      * @return an itemstack at the given inventory template slot location, or ItemStack.EMPTY if no item in slot
      */
     @Nonnull
-    public static ItemStack getStackAtSlot(@Nonnull ServerPlayerEntity player, int inventorySlot) {
+    public static ItemStack getStackAtSlot(@Nonnull ServerPlayer player, int inventorySlot) {
         /*
          * Offset hotbar and main inventory since their implementation differs from concept of template slots.
          * Hotbar in inventory is always placed before main inventory slots in player inventory, where
          * the hotbar in template is always after the main inventory slots.
          */
         if (inventorySlot >= 27) {
-            return player.inventory.getStackInSlot(inventorySlot - 27);
+            return player.getInventory().getItem(inventorySlot - 27);
         } else {
-            return player.inventory.getStackInSlot(inventorySlot + 9);
+            return player.getInventory().getItem(inventorySlot + 9);
         }
     }
 

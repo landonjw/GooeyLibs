@@ -3,21 +3,18 @@ package ca.landonjw.gooeylibs2.api.button;
 import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import com.google.common.collect.Lists;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.ListNBT;
-import net.minecraft.nbt.StringNBT;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.Style;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -49,8 +46,8 @@ public class GooeyButton extends ButtonBase {
     public static class Builder {
 
         protected ItemStack display;
-        protected ITextComponent title;
-        protected Collection<ITextComponent> lore = Lists.newArrayList();
+        protected net.minecraft.network.chat.Component  title;
+        protected Collection<net.minecraft.network.chat.Component > lore = Lists.newArrayList();
         protected Consumer<ButtonAction> onClick;
         protected Set<FlagType> hideFlags = new LinkedHashSet<>();
 
@@ -64,10 +61,10 @@ public class GooeyButton extends ButtonBase {
                 return this;
             }
 
-            return this.title(new StringTextComponent(title));
+            return this.title(new TextComponent(title));
         }
 
-        public Builder title(@Nullable ITextComponent title) {
+        public Builder title(@Nullable net.minecraft.network.chat.Component  title) {
             this.title = title;
             return this;
         }
@@ -90,14 +87,14 @@ public class GooeyButton extends ButtonBase {
                 return this;
             }
 
-            if(ITextComponent.class.isAssignableFrom(type) || Component.class.isAssignableFrom(type)) {
+            if(net.minecraft.network.chat.Component.class.isAssignableFrom(type) || Component.class.isAssignableFrom(type)) {
                 if(Component.class.isAssignableFrom(type)) {
                     this.lore = lore.stream()
                             .map(entry -> (Component) entry)
                             .map(ForgeTranslator::asMinecraft)
                             .collect(Collectors.toList());
                 } else {
-                    this.lore = (Collection<ITextComponent>) lore;
+                    this.lore = (Collection<net.minecraft.network.chat.Component>) lore;
                 }
                 return this;
             } else if(String.class.isAssignableFrom(type)) {
@@ -133,21 +130,21 @@ public class GooeyButton extends ButtonBase {
 
         protected ItemStack buildDisplay() {
             if (title != null) {
-                IFormattableTextComponent result = new StringTextComponent("")
-                        .setStyle(Style.EMPTY.setItalic(false))
-                        .appendSibling(this.title);
-                display.setDisplayName(result);
+                MutableComponent result = new TextComponent("")
+                        .setStyle(Style.EMPTY.withItalic(false))
+                        .append(this.title);
+                display.setHoverName(result);
             }
 
             if (!lore.isEmpty()) {
-                ListNBT nbtLore = new ListNBT();
-                for (ITextComponent line : lore) {
-                    IFormattableTextComponent result = new StringTextComponent("")
-                            .setStyle(Style.EMPTY.setItalic(false))
-                            .appendSibling(line);
-                    nbtLore.add(StringNBT.valueOf(ITextComponent.Serializer.toJson(result)));
+                ListTag nbtLore = new ListTag();
+                for (net.minecraft.network.chat.Component line : lore) {
+                    MutableComponent result = new TextComponent("")
+                            .setStyle(Style.EMPTY.withItalic(false))
+                            .append(line);
+                    nbtLore.add(StringTag.valueOf(net.minecraft.network.chat.Component.Serializer.toJson(result)));
                 }
-                display.getOrCreateChildTag("display").put("Lore", nbtLore);
+                display.getOrCreateTagElement("display").put("Lore", nbtLore);
             }
 
             if (!this.hideFlags.isEmpty() && display.hasTag())

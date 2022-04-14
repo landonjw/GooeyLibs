@@ -5,8 +5,7 @@ import ca.landonjw.gooeylibs2.api.data.EventEmitter;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import net.kyori.adventure.text.Component;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -18,14 +17,14 @@ public abstract class PageBase implements Page {
     private final EventEmitter<Page> eventEmitter = new EventEmitter<>();
     private Template template;
     private InventoryTemplate inventoryTemplate;
-    private ITextComponent title;
+    private net.minecraft.network.chat.Component title;
 
     public PageBase(@Nonnull Template template,
                     @Nullable InventoryTemplate inventoryTemplate,
-                    @Nullable ITextComponent title) {
+                    @Nullable net.minecraft.network.chat.Component title) {
         this.template = template;
         this.inventoryTemplate = inventoryTemplate;
-        this.title = (title != null) ? title : StringTextComponent.EMPTY;
+        this.title = (title != null) ? title : TextComponent.EMPTY;
     }
 
     public Template getTemplate() {
@@ -47,16 +46,16 @@ public abstract class PageBase implements Page {
         this.inventoryTemplate = inventoryTemplate;
     }
 
-    public ITextComponent getTitle() {
+    public net.minecraft.network.chat.Component getTitle() {
         return this.title;
     }
 
     public void setTitle(@Nullable String title) {
-        this.setTitle(title == null ? null : new StringTextComponent(title));
+        this.setTitle(title == null ? null : new TextComponent(title));
     }
 
-    public void setTitle(@Nullable ITextComponent title) {
-        this.title = (title == null) ? StringTextComponent.EMPTY : title;
+    public void setTitle(@Nullable net.minecraft.network.chat.Component title) {
+        this.title = (title == null) ? TextComponent.EMPTY : title;
         update();
     }
 

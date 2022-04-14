@@ -5,7 +5,7 @@ import ca.landonjw.gooeylibs2.api.button.ButtonAction;
 import ca.landonjw.gooeylibs2.api.button.ButtonClick;
 import ca.landonjw.gooeylibs2.api.page.Page;
 import ca.landonjw.gooeylibs2.api.template.Template;
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nonnull;
 
@@ -13,7 +13,7 @@ public class MovableButtonAction extends ButtonAction {
 
     private boolean cancelled;
 
-    public MovableButtonAction(@Nonnull ServerPlayerEntity player,
+    public MovableButtonAction(@Nonnull ServerPlayer player,
                                @Nonnull ButtonClick clickType,
                                @Nonnull Button button,
                                @Nonnull Template template,
