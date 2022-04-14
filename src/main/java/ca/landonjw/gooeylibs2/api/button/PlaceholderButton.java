@@ -1,6 +1,6 @@
 package ca.landonjw.gooeylibs2.api.button;
 
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;

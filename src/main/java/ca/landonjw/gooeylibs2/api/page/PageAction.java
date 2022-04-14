@@ -1,20 +1,20 @@
 package ca.landonjw.gooeylibs2.api.page;
 
-import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nonnull;
 
 public class PageAction {
 
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
     private final Page page;
 
-    public PageAction(@Nonnull ServerPlayerEntity player, @Nonnull Page page) {
+    public PageAction(@Nonnull ServerPlayer player, @Nonnull Page page) {
         this.player = player;
         this.page = page;
     }
 
-    public ServerPlayerEntity getPlayer() {
+    public ServerPlayer getPlayer() {
         return player;
     }
 
