@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "ca.landonjw.gooeylibs2.mixin",
+  "compatibilityLevel": "JAVA_8",
+  "refmap": "examplemod.refmap.json",
+  "mixins": [
+    "ServerPlayerMixin",
+    "PlayerMixin"
+  ],
+  "client":[
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "minVersion": "0.8"
+}
