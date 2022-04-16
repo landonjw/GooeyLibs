@@ -3,9 +3,9 @@ package ca.landonjw.gooeylibs2.api.template;
 import ca.landonjw.gooeylibs2.api.data.UpdateEmitter;
 import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 import com.google.common.collect.Lists;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.NonNullList;
+import net.minecraft.core.NonNullList;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.List;
@@ -25,8 +25,8 @@ public abstract class Template extends UpdateEmitter<Template> {
 
         for (TemplateSlot slot : slots) {
             this.slots.add(slot);
-            this.displayStacks.add(slot.getStack());
-            slot.subscribe(this, (update) -> displayStacks.set(update.getSlotIndex(), update.getStack()));
+            this.displayStacks.add(slot.getItem());
+            slot.subscribe(this, (update) -> displayStacks.set(update.getSlotIndex(), update.getItem()));
         }
     }
 
@@ -51,7 +51,7 @@ public abstract class Template extends UpdateEmitter<Template> {
     @Deprecated
     public final NonNullList<ItemStack> getDisplayStacks() {
         NonNullList<ItemStack> copy = NonNullList.create();
-        displayStacks.forEach(copy::add);
+        copy.addAll(displayStacks);
         return copy;
     }
 

@@ -3,8 +3,8 @@ package ca.landonjw.gooeylibs2.api.template.slot;
 import ca.landonjw.gooeylibs2.api.button.Button;
 import ca.landonjw.gooeylibs2.api.data.EventEmitter;
 import ca.landonjw.gooeylibs2.api.data.Subject;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,12 +48,12 @@ public final class TemplateSlot extends Slot implements Subject<TemplateSlot> {
     }
 
     @Override
-    public ItemStack getStack() {
+    public ItemStack getItem() {
         return (button != null) ? button.getDisplay() : ItemStack.EMPTY;
     }
 
     @Override
-    public boolean isItemValid(ItemStack stack) {
+    public boolean mayPlace(ItemStack stack) {
         return false;
     }
 

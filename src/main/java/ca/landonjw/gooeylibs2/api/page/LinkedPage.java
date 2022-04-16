@@ -3,9 +3,8 @@ package ca.landonjw.gooeylibs2.api.page;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import net.kyori.adventure.text.Component;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -32,7 +31,7 @@ public class LinkedPage extends GooeyPage {
 
     public LinkedPage(@Nonnull Template template,
                       @Nullable InventoryTemplate inventoryTemplate,
-                      @Nullable ITextComponent title,
+                      @Nullable net.minecraft.network.chat.Component title,
                       @Nullable Consumer<PageAction> onOpen,
                       @Nullable Consumer<PageAction> onClose,
                       @Nullable LinkedPage previous,
@@ -69,7 +68,7 @@ public class LinkedPage extends GooeyPage {
     }
 
     @Override
-    public ITextComponent getTitle() {
+    public net.minecraft.network.chat.Component getTitle() {
         return replace(
                 replace(super.getTitle(), Pattern.compile(CURRENT_PAGE_PLACEHOLDER, Pattern.LITERAL), "" + getCurrentPage()),
                 Pattern.compile(TOTAL_PAGES_PLACEHOLDER, Pattern.LITERAL),
@@ -98,7 +97,7 @@ public class LinkedPage extends GooeyPage {
         }
 
         @Override
-        public Builder title(@Nullable ITextComponent title) {
+        public Builder title(@Nullable net.minecraft.network.chat.Component title) {
             super.title(title);
             return this;
         }
@@ -162,10 +161,10 @@ public class LinkedPage extends GooeyPage {
 
     }
 
-    private ITextComponent replace(ITextComponent parent, Pattern pattern, String replacement) {
-        IFormattableTextComponent result;
-        if(parent instanceof StringTextComponent) {
-            StringTextComponent stc = (StringTextComponent) parent;
+    private net.minecraft.network.chat.Component replace(net.minecraft.network.chat.Component parent, Pattern pattern, String replacement) {
+        MutableComponent result;
+        if(parent instanceof TextComponent) {
+            TextComponent stc = (TextComponent) parent;
             String content = stc.getText();
             if (!content.isEmpty()) {
                 Matcher matcher = pattern.matcher(content);
@@ -173,23 +172,23 @@ public class LinkedPage extends GooeyPage {
                     content = matcher.replaceAll(replacement);
                 }
 
-                result = new StringTextComponent(content);
+                result = new TextComponent(content);
                 result.setStyle(parent.getStyle());
             } else {
-                result = new StringTextComponent(stc.getText());
+                result = new TextComponent(stc.getText());
                 result.setStyle(parent.getStyle());
             }
         } else {
-            result = parent.copyRaw();
+            result = parent.plainCopy();
             result.setStyle(parent.getStyle());
         }
 
-        List<StringTextComponent> children = parent.getSiblings().stream()
-                .filter(c -> c instanceof StringTextComponent)
-                .map(StringTextComponent.class::cast)
+        List<TextComponent> children = parent.getSiblings().stream()
+                .filter(c -> c instanceof TextComponent)
+                .map(TextComponent.class::cast)
                 .collect(Collectors.toList());
-        for(StringTextComponent child : children) {
-            result.appendSibling(this.replace(child, pattern, replacement));
+        for(TextComponent child : children) {
+            result.append(this.replace(child, pattern, replacement));
         }
 
         return result;

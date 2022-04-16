@@ -1,41 +1,32 @@
 package ca.landonjw.gooeylibs2.api.template;
-
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.MenuType;
 
 import javax.annotation.Nonnull;
 import java.util.function.Function;
 
 public enum TemplateType {
-    CHEST(template -> {
-        switch (template.getSize() / 9) {
-            case 1:
-                return ContainerType.GENERIC_9X1;
-            case 2:
-                return ContainerType.GENERIC_9X2;
-            case 3:
-                return ContainerType.GENERIC_9X3;
-            case 4:
-                return ContainerType.GENERIC_9X4;
-            case 5:
-                return ContainerType.GENERIC_9X5;
-            default:
-                return ContainerType.GENERIC_9X6;
-        }
+    CHEST(template -> switch (template.getSize() / 9) {
+        case 1 -> MenuType.GENERIC_9x1;
+        case 2 -> MenuType.GENERIC_9x2;
+        case 3 -> MenuType.GENERIC_9x3;
+        case 4 -> MenuType.GENERIC_9x4;
+        case 5 -> MenuType.GENERIC_9x5;
+        default -> MenuType.GENERIC_9x6;
     }),
-    FURNACE(template -> ContainerType.FURNACE),
-    BREWING_STAND(template -> ContainerType.BREWING_STAND),
-    HOPPER(template -> ContainerType.HOPPER),
-    DISPENSER(template -> ContainerType.GENERIC_3X3),
-    CRAFTING_TABLE(template -> ContainerType.CRAFTING);
+    FURNACE(template -> MenuType.FURNACE),
+    BREWING_STAND(template -> MenuType.BREWING_STAND),
+    HOPPER(template -> MenuType.HOPPER),
+    DISPENSER(template -> MenuType.GENERIC_3x3),
+    CRAFTING_TABLE(template -> MenuType.CRAFTING);
 
-    private final Function<Template, ContainerType<? extends Container>> containerTypeSupplier;
+    private final Function<Template, MenuType<? extends AbstractContainerMenu>> containerTypeSupplier;
 
-    TemplateType(@Nonnull Function<Template, ContainerType<? extends Container>> containerTypeSupplier) {
+    TemplateType(@Nonnull Function<Template, MenuType<? extends AbstractContainerMenu>> containerTypeSupplier) {
         this.containerTypeSupplier = containerTypeSupplier;
     }
 
-    public ContainerType<? extends Container> getContainerType(@Nonnull Template template) {
+    public MenuType<? extends AbstractContainerMenu> getContainerType(@Nonnull Template template) {
         return containerTypeSupplier.apply(template);
     }
 

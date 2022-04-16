@@ -10,4 +10,7 @@ public class GooeyLibs {
      */
     public static final String MOD_ID = "gooeylibs2";
 
+    public GooeyLibs() {
+    }
+
 }

@@ -12,24 +12,24 @@ import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.slot.TemplateSlot;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import ca.landonjw.gooeylibs2.implementation.tasks.Task;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.inventory.container.ClickType;
-import net.minecraft.inventory.container.Container;
-import net.minecraft.inventory.container.Slot;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.play.server.SOpenWindowPacket;
-import net.minecraft.network.play.server.SSetSlotPacket;
+import net.minecraft.core.NonNullList;
+import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraftforge.common.MinecraftForge;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 import javax.annotation.Nonnull;
 import java.util.List;
 
-public class GooeyContainer extends Container {
+public class GooeyContainer extends AbstractContainerMenu {
 
     private final MinecraftServer server;
-    private final ServerPlayerEntity player;
+    private final ServerPlayer player;
 
     private Page page;
     public InventoryTemplate inventoryTemplate;
@@ -43,9 +43,9 @@ public class GooeyContainer extends Container {
      */
     private Button cursorButton;
 
-    public GooeyContainer(@Nonnull ServerPlayerEntity player, @Nonnull Page page) {
+    public GooeyContainer(@Nonnull ServerPlayer player, @Nonnull Page page) {
         super(page.getTemplate().getTemplateType().getContainerType(page.getTemplate()), 1);
-        this.server = player.world.getServer();
+        this.server = player.level.getServer();
         this.player = player;
 
         this.page = page;
@@ -63,7 +63,7 @@ public class GooeyContainer extends Container {
         unbindSlots();
         inventoryTemplate = page.getInventoryTemplate().orElse(null);
         bindSlots();
-        openWindow();
+        broadcastFullState();
     }
 
     private void bindSlots() {
@@ -80,18 +80,7 @@ public class GooeyContainer extends Container {
          * Add user inventory portion to the container slots and stacks.
          * Adding these slots are necessary to stop Sponge from having an aneurysm about missing slots,
          */
-        if (inventoryTemplate == null) {
-            // Sets the slots for the main inventory.
-            for (int i = 9; i < 36; i++) {
-                GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
-                addSlot(new TemplateSlot(button, i - 9, 0, 0));
-            }
-            // Sets the slots for the hotbar.
-            for (int i = 0; i < 9; i++) {
-                GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
-                addSlot(new TemplateSlot(button, i + 27, 0, 0));
-            }
-        } else {
+        if (inventoryTemplate != null) {
             for (int i = 0; i < inventoryTemplate.getSize(); i++) {
                 int index = i;
                 int itemSlot = i + page.getTemplate().getSize();
@@ -100,11 +89,22 @@ public class GooeyContainer extends Container {
                 });
                 addSlot(inventoryTemplate.getSlot(i));
             }
+        } else {
+            // Sets the slots for the main inventory.
+            for (int i = 9; i < 36; i++) {
+                GooeyButton button = GooeyButton.of(player.getInventory().getItem(i));
+                addSlot(new TemplateSlot(button, i - 9, 0, 0));
+            }
+            // Sets the slots for the hotbar.
+            for (int i = 0; i < 9; i++) {
+                GooeyButton button = GooeyButton.of(player.getInventory().getItem(i));
+                addSlot(new TemplateSlot(button, i + 27, 0, 0));
+            }
         }
     }
 
     private void unbindSlots() {
-        inventorySlots.forEach(slot -> {
+        slots.forEach(slot -> {
             ((TemplateSlot) slot).unsubscribe(this);
         });
         if (inventoryTemplate != null) {
@@ -112,16 +112,23 @@ public class GooeyContainer extends Container {
                 ((TemplateSlot) slot).unsubscribe(this);
             });
         }
+
+        slots = NonNullList.create();
+
     }
 
     private void updateSlotStack(int index, ItemStack stack, boolean playerInventory) {
-        if (playerInventory) {
-            SSetSlotPacket setSlot = new SSetSlotPacket(windowId, page.getTemplate().getSize() + index, stack);
-            player.connection.sendPacket(setSlot);
-        } else {
-            SSetSlotPacket setSlot = new SSetSlotPacket(windowId, index, stack);
-            player.connection.sendPacket(setSlot);
-        }
+//        ((TemplateSlot) getSlot(index + (playerInventory ? page.getTemplate().getSize() : 0))).set.set(stack);
+//        broadcastChanges();
+//        if (playerInventory) {
+//            this.setRemoteSlot(page.getTemplate().getSize() + index, stack);
+//        } else {
+//            this.setRemoteSlot(index, stack);
+//        }
+//
+//        if (this.synchronizer != null) {
+//            this.synchronizer.sendSlotChange(this, , stack);
+//        }
     }
 
     private int getTemplateIndex(int slotIndex) {
@@ -142,14 +149,14 @@ public class GooeyContainer extends Container {
 
     private boolean isSlotInPlayerInventory(int slot) {
         int templateSize = page.getTemplate().getSize();
-        return slot >= templateSize && slot - templateSize < player.container.inventorySlots.size();
+        return slot >= templateSize && slot - templateSize < player.inventoryMenu.slots.size();
     }
 
     private ItemStack getItemAtSlot(int slot) {
-        if (slot == -999 || slot >= inventorySlots.size()) {
+        if (slot == -999 || slot >= slots.size()) {
             return ItemStack.EMPTY;
         }
-        return inventorySlots.get(slot).getStack();
+        return slots.get(slot).getItem();
     }
 
     private Button getButton(int slot) {
@@ -170,38 +177,40 @@ public class GooeyContainer extends Container {
         }
     }
 
-    public void open() {
-        player.closeContainer();
-        player.openContainer = this;
-        player.currentWindowId = windowId;
-        openWindow();
-        page.onOpen(new PageAction(player, page));
-    }
-
     private void openWindow() {
-        SOpenWindowPacket openWindow = new SOpenWindowPacket(
-                player.currentWindowId,
+        player.openMenu(new SimpleMenuProvider((id, p_39955_, p_39956_) -> {
+            this.containerId = id;
+
+            return this;
+        }, page.getTitle()));
+
+        ClientboundOpenScreenPacket openWindow = new ClientboundOpenScreenPacket(
+                player.containerCounter,
                 page.getTemplate().getTemplateType().getContainerType(page.getTemplate()),
                 page.getTitle()
 //                page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE ? 0 : page.getTemplate().getSize() TODO: Check this works
         );
-        player.connection.sendPacket(openWindow);
-        updateAllContainerContents();
+        player.connection.send(openWindow);
+
+        broadcastFullState();
     }
 
     private void patchDesyncs(int slot, ClickType clickType) {
         if (clickType == ClickType.PICKUP || clickType == ClickType.CLONE || clickType == ClickType.THROW) {
             updateSlotStack(getTemplateIndex(slot), getItemAtSlot(slot), isSlotInPlayerInventory(slot));
-        } else if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL) {
-            updateAllContainerContents();
         }
     }
 
     @Override
-    public ItemStack slotClick(int slot, int dragType, ClickType clickType, PlayerEntity playerSP) {
+    public void clicked(int p_150400_, int p_150401_, ClickType p_150402_, Player p_150403_) {
+        clickedProxied(p_150400_, p_150401_, p_150402_, p_150403_);
+        broadcastChanges();
+    }
+
+    public void clickedProxied(int slot, int dragType, ClickType clickType, Player playerSP) {
         // Don't do anything if user is only clicking edge of UI.
         if (slot == -1 || slot == -999) {
-            return ItemStack.EMPTY;
+            return;
         }
 
         /*
@@ -212,23 +221,24 @@ public class GooeyContainer extends Container {
          * it will return out.
          */
         if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL || clickType == ClickType.PICKUP) {
-            if (lastClickTick == server.getTickCounter()) {
+            if (lastClickTick == server.getTickCount()) {
                 if (clickType == ClickType.PICKUP) {
                     if (cursorButton != null) {
                         ItemStack clickedItem = getItemAtSlot(slot);
                         ItemStack cursorItem = cursorButton.getDisplay();
 
-                        if (clickedItem.getItem() == cursorItem.getItem() && ItemStack.areItemStackTagsEqual(clickedItem, cursorItem)) {
+                        if (clickedItem.getItem() == cursorItem.getItem() && ItemStack.tagMatches(clickedItem, cursorItem)) {
                             ItemStack copy = getItemAtSlot(slot).copy();
                             copy.setCount(copy.getCount() + cursorButton.getDisplay().getCount());
-                            return copy;
+                            broadcastChanges();
+                            return;
                         }
-                        return cursorButton.getDisplay();
+                        return;
                     }
                 }
-                return ItemStack.EMPTY;
+                return;
             }
-            lastClickTick = server.getTickCounter();
+            lastClickTick = server.getTickCount();
         }
 
         if (clickType == ClickType.QUICK_CRAFT && dragType == 8) {
@@ -240,11 +250,11 @@ public class GooeyContainer extends Container {
              */
             Task.builder()
                     .execute(() -> {
-                        updateAllContainerContents();
                         setPlayersCursor((cursorButton != null) ? cursorButton.getDisplay() : ItemStack.EMPTY);
+                        broadcastChanges();
                     })
                     .build();
-            return ItemStack.EMPTY;
+            return;
         }
 
         patchDesyncs(slot, clickType);
@@ -254,7 +264,8 @@ public class GooeyContainer extends Container {
          *  send it to a separate handler.
          */
         if (clickedButton instanceof Movable || cursorButton != null) {
-            return handleMovableButton(slot, dragType, clickType);
+            handleMovableButton(slot, dragType, clickType);
+            return;
         }
 
         /*
@@ -266,7 +277,7 @@ public class GooeyContainer extends Container {
         }
         if (clickType == ClickType.QUICK_CRAFT) {
             updateSlotStack(getTemplateIndex(slot), ItemStack.EMPTY, isSlotInPlayerInventory(slot));
-            return ItemStack.EMPTY;
+            return;
         }
 
         ButtonClick buttonClickType = getButtonClickType(clickType, dragType);
@@ -274,32 +285,26 @@ public class GooeyContainer extends Container {
             ButtonAction action = new ButtonAction(player, buttonClickType, clickedButton, page.getTemplate(), page, slot);
             clickedButton.onClick(action);
         }
-        return ItemStack.EMPTY;
     }
 
     private ButtonClick getButtonClickType(ClickType type, int dragType) {
-        switch (type) {
-            case PICKUP:
-                return (dragType == 0) ? ButtonClick.LEFT_CLICK : ButtonClick.RIGHT_CLICK;
-            case CLONE:
-                return ButtonClick.MIDDLE_CLICK;
-            case QUICK_MOVE:
-                return (dragType == 0) ? ButtonClick.SHIFT_LEFT_CLICK : ButtonClick.SHIFT_RIGHT_CLICK;
-            case THROW:
-                return ButtonClick.THROW;
-            default:
-                return ButtonClick.OTHER;
-        }
+        return switch (type) {
+            case PICKUP -> (dragType == 0) ? ButtonClick.LEFT_CLICK : ButtonClick.RIGHT_CLICK;
+            case CLONE -> ButtonClick.MIDDLE_CLICK;
+            case QUICK_MOVE -> (dragType == 0) ? ButtonClick.SHIFT_LEFT_CLICK : ButtonClick.SHIFT_RIGHT_CLICK;
+            case THROW -> ButtonClick.THROW;
+            default -> ButtonClick.OTHER;
+        };
     }
 
-    private ItemStack handleMovableButton(int slot, int dragType, ClickType clickType) {
+    private void handleMovableButton(int slot, int dragType, ClickType clickType) {
         /*
          * This prevents a desync with dragging an item.
          * Quick crafts begin and end with a click on slot -999,
          * we want to ignore those calls.
          */
         if (clickType == ClickType.QUICK_CRAFT && slot == -999) {
-            return ItemStack.EMPTY;
+            return;
         }
 
         Template template = getTemplateFromIndex(slot);
@@ -308,31 +313,28 @@ public class GooeyContainer extends Container {
         if (template == null) {
             if (clickType == ClickType.PICKUP && isSlotOccupied(slot)) {
                 setPlayersCursor((cursorButton != null) ? cursorButton.getDisplay() : ItemStack.EMPTY);
-                return getItemAtSlot(slot);
+                return;
             }
             if (clickType == ClickType.QUICK_CRAFT) {
                 updateSlotStack(getTemplateIndex(slot), getItemAtSlot(slot), true);
             }
-            if (cursorButton == null) {
-                return ItemStack.EMPTY;
-            } else {
+            if (cursorButton != null) {
                 setPlayersCursor(cursorButton.getDisplay());
-                return ItemStack.EMPTY;
             }
         } else {
             Button clickedButton = getButton(slot);
 
             if (cursorButton == null) {
-                if (slot == -999) return ItemStack.EMPTY;
+                if (slot == -999) return;
 
                 setPlayersCursor(getItemAtSlot(slot));
 
                 if (clickedButton == null) {
-                    return ItemStack.EMPTY;
+                    return;
                 }
                 if (clickType == ClickType.QUICK_CRAFT && dragType == 9) {
                     setPlayersCursor(ItemStack.EMPTY);
-                    return ItemStack.EMPTY;
+                    return;
                 }
 
                 ButtonClick click = getButtonClickType(clickType, dragType);
@@ -343,7 +345,6 @@ public class GooeyContainer extends Container {
                 if (action.isCancelled()) {
                     setPlayersCursor(ItemStack.EMPTY);
                     updateSlotStack(targetTemplateSlot, clickedButton.getDisplay(), template instanceof InventoryTemplate);
-                    return ItemStack.EMPTY;
                 } else {
                     cursorButton = clickedButton;
                     setButton(slot, null);
@@ -351,16 +352,13 @@ public class GooeyContainer extends Container {
                     // Clone needs to return empty ItemStack or it desyncs.
                     if (clickType == ClickType.CLONE || clickType == ClickType.QUICK_MOVE || clickType == ClickType.THROW) {
                         setPlayersCursor(cursorButton.getDisplay());
-                        return ItemStack.EMPTY;
-                    } else {
-                        return cursorButton.getDisplay();
                     }
                 }
             } else {
                 // This prevents a desync on double clicking when dropping
                 if (clickType == ClickType.PICKUP_ALL || slot == -999) {
                     setPlayersCursor(cursorButton.getDisplay());
-                    return ItemStack.EMPTY;
+                    return;
                 }
 
                 // Handle collision
@@ -372,15 +370,14 @@ public class GooeyContainer extends Container {
                      * collisions when trying to drop. Quick move wants a return type of an empty ItemStack,
                      * so this guarantees it, otherwise there will be a desync.
                      */
-                    if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.CLONE || clickType == ClickType.THROW) {
-                        return ItemStack.EMPTY;
-                    } else if (clickType == ClickType.QUICK_CRAFT) {
-                        updateSlotStack(getTemplateIndex(slot), getItemAtSlot(slot), isSlotInPlayerInventory(slot));
-                        return ItemStack.EMPTY;
-                    } else if (clickType == ClickType.PICKUP) {
-                        return getItemAtSlot(slot);
-                    } else {
-                        return cursorButton.getDisplay();
+                    switch (clickType) {
+                        case QUICK_MOVE:
+                        case CLONE:
+                        case THROW:
+                            break;
+                        case QUICK_CRAFT:
+                            updateSlotStack(getTemplateIndex(slot), getItemAtSlot(slot), isSlotInPlayerInventory(slot));
+                            break;
                     }
                 } else {
                     ButtonClick click = getButtonClickType(clickType, dragType);
@@ -391,17 +388,15 @@ public class GooeyContainer extends Container {
                     if (action.isCancelled()) {
                         // Clone needs to return empty ItemStack or it desyncs.
                         if (clickType == ClickType.CLONE) {
-                            return ItemStack.EMPTY;
+                            return;
                         }
 
                         setPlayersCursor(cursorButton.getDisplay());
                         updateSlotStack(targetTemplateSlot, ItemStack.EMPTY, template instanceof InventoryTemplate);
-                        return ItemStack.EMPTY;
                     } else {
                         setButton(slot, cursorButton);
                         cursorButton = null;
                         setPlayersCursor(ItemStack.EMPTY);
-                        return ItemStack.EMPTY;
                     }
                 }
             }
@@ -410,7 +405,7 @@ public class GooeyContainer extends Container {
 
     private boolean isSlotOccupied(int slot) {
         if (isSlotInPlayerInventory(slot) && inventoryTemplate == null) {
-            return player.openContainer.inventorySlots.get(getTemplateIndex(slot) + 9).getHasStack();
+            return player.containerMenu.slots.get(getTemplateIndex(slot) + 9).hasItem();
         } else {
             return getButton(slot) != null;
         }
@@ -420,24 +415,8 @@ public class GooeyContainer extends Container {
         return page;
     }
 
-    private void updateAllContainerContents() {
-        player.sendAllContents(player.openContainer, this.getInventory());
-
-        /*
-         * Detects changes in the player's inventory and updates them. This is to prevent desyncs if a player
-         * gets items added to their inventory while in the user interface.
-         */
-        player.container.detectAndSendChanges();
-        if (inventoryTemplate != null) {
-            player.sendAllContents(player.container, inventoryTemplate.getFullDisplay(player));
-        } else {
-            player.sendAllContents(player.container, player.container.getInventory());
-        }
-    }
-
     private void setPlayersCursor(ItemStack stack) {
-        SSetSlotPacket setCursorSlot = new SSetSlotPacket(-1, 0, stack);
-        player.connection.sendPacket(setCursorSlot);
+        setCarried(stack);
     }
 
     private void setButton(int slot, Button button) {
@@ -456,27 +435,24 @@ public class GooeyContainer extends Container {
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity player) {
+    public boolean stillValid(Player pPlayer) {
         return true;
     }
 
     @Override
-    public void onContainerClosed(PlayerEntity playerIn) {
+    public void removed(Player playerIn) {
         if (closing) return;
 
         closing = true;
         page.onClose(new PageAction(player, page));
         page.unsubscribe(this);
-        this.inventorySlots.forEach((slot) -> ((TemplateSlot) slot).unsubscribe(this));
+        this.slots.forEach((slot) -> ((TemplateSlot) slot).unsubscribe(this));
         if (inventoryTemplate != null) {
             for (int i = 0; i < inventoryTemplate.getSize(); i++) {
                 inventoryTemplate.getSlot(i).unsubscribe(this);
             }
         }
-        MinecraftForge.EVENT_BUS.unregister(this);
-
-        player.container.detectAndSendChanges();
-        player.sendAllContents(player.container, player.container.getInventory());
+//        MinecraftForge.EVENT_BUS.unregister(this);
     }
 
 }

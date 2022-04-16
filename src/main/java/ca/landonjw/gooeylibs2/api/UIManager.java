@@ -1,12 +1,10 @@
 package ca.landonjw.gooeylibs2.api;
 
 import ca.landonjw.gooeylibs2.api.page.Page;
-import ca.landonjw.gooeylibs2.implementation.GooeyContainer;
 import ca.landonjw.gooeylibs2.implementation.tasks.Task;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.client.CCloseWindowPacket;
-import net.minecraft.network.play.server.SCloseWindowPacket;
-import net.minecraftforge.fml.common.ObfuscationReflectionHelper;
+import net.minecraft.network.protocol.game.ClientboundContainerClosePacket;
+import net.minecraft.network.protocol.game.ServerboundContainerClosePacket;
+import net.minecraft.server.level.ServerPlayer;
 
 import javax.annotation.Nonnull;
 import java.util.concurrent.TimeUnit;
@@ -14,12 +12,12 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class UIManager {
 
-    public static void openUIPassively(@Nonnull ServerPlayerEntity player, @Nonnull Page page, long timeout, TimeUnit timeoutUnit) {
+    public static void openUIPassively(@Nonnull ServerPlayer player, @Nonnull Page page, long timeout, TimeUnit timeoutUnit) {
         AtomicLong timeOutTicks = new AtomicLong(timeoutUnit.convert(timeout, TimeUnit.SECONDS) * 20);
         Task.builder()
                 .execute((task) -> {
                     timeOutTicks.getAndDecrement();
-                    if (player.openContainer == player.container || timeOutTicks.get() <= 0) {
+                    if (player.containerMenu == player.inventoryMenu || timeOutTicks.get() <= 0) {
                         openUIForcefully(player, page);
                         task.setExpired();
                     }
@@ -29,27 +27,26 @@ public class UIManager {
                 .build();
     }
 
-    public static void openUIForcefully(@Nonnull ServerPlayerEntity player, @Nonnull Page page) {
+    public static void openUIForcefully(@Nonnull ServerPlayer player, @Nonnull Page page) {
         // Delay the open to allow sponge's annoying mixins to process previous container and not have aneurysm
         Task.builder()
                 .execute(() -> {
-                    GooeyContainer container = new GooeyContainer(player, page);
-                    container.open();
+                    Page.open(player, page);
                 })
                 .build();
     }
 
-    public static void closeUI(@Nonnull ServerPlayerEntity player) {
+    public static void closeUI(@Nonnull ServerPlayer player) {
         Task.builder()
                 .execute(() -> {
-                    int windowId = player.openContainer == null ? 0 : player.openContainer.windowId;
+                    player.closeContainer();
+                    int windowId = player.containerMenu.containerId;
 
-                    CCloseWindowPacket pclient = new CCloseWindowPacket();
-                    ObfuscationReflectionHelper.setPrivateValue(CCloseWindowPacket.class, pclient, windowId, "windowId");
-                    SCloseWindowPacket pserver = new SCloseWindowPacket(windowId);
+                    ServerboundContainerClosePacket pclient = new ServerboundContainerClosePacket(windowId);
+                    ClientboundContainerClosePacket pserver = new ClientboundContainerClosePacket(windowId);
 
-                    player.connection.processCloseWindow(pclient);
-                    player.connection.sendPacket(pserver);
+                    player.connection.handleContainerClose(pclient);
+                    player.connection.send(pserver);
                 })
                 .build();
     }

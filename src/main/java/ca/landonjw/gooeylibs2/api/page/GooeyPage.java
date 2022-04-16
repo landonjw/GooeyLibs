@@ -4,8 +4,7 @@ import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
 import net.kyori.adventure.text.Component;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.network.chat.TextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,7 +16,7 @@ public class GooeyPage extends PageBase {
 
     public GooeyPage(@Nonnull Template template,
                      @Nullable InventoryTemplate inventoryTemplate,
-                     @Nullable ITextComponent title,
+                     @Nullable net.minecraft.network.chat.Component title,
                      @Nullable Consumer<PageAction> onOpen,
                      @Nullable Consumer<PageAction> onClose) {
         super(template, inventoryTemplate, title);
@@ -41,7 +40,7 @@ public class GooeyPage extends PageBase {
 
     public static class Builder {
 
-        protected ITextComponent title;
+        protected net.minecraft.network.chat.Component title;
         protected Template template;
         protected InventoryTemplate inventoryTemplate;
         protected Consumer<PageAction> onOpen, onClose;
@@ -51,10 +50,10 @@ public class GooeyPage extends PageBase {
                 return this;
             }
 
-            return this.title(new StringTextComponent(title));
+            return this.title(new TextComponent(title));
         }
 
-        public Builder title(@Nullable ITextComponent title) {
+        public Builder title(@Nullable net.minecraft.network.chat.Component title) {
             this.title = title;
             return this;
         }
