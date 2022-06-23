@@ -1,9 +1,6 @@
 package ca.landonjw.gooeylibs2.api.button;
 
-import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import com.google.common.collect.Lists;
-import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.TextComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.nbt.StringNBT;
@@ -72,16 +69,13 @@ public class GooeyButton extends ButtonBase {
             return this;
         }
 
-        public Builder title(@Nullable Component title) {
-            return this.title(ForgeTranslator.asMinecraft(title));
-        }
-
         public Builder lore(@Nullable Collection<String> lore) {
             if(lore == null) {
                 return this;
             }
 
-            return this.lore(String.class, lore);
+            this.lore = lore.stream().map(StringTextComponent::new).collect(Collectors.toList());
+            return this;
         }
 
         @SuppressWarnings("unchecked")
@@ -90,15 +84,8 @@ public class GooeyButton extends ButtonBase {
                 return this;
             }
 
-            if(ITextComponent.class.isAssignableFrom(type) || Component.class.isAssignableFrom(type)) {
-                if(Component.class.isAssignableFrom(type)) {
-                    this.lore = lore.stream()
-                            .map(entry -> (Component) entry)
-                            .map(ForgeTranslator::asMinecraft)
-                            .collect(Collectors.toList());
-                } else {
-                    this.lore = (Collection<ITextComponent>) lore;
-                }
+            if(ITextComponent.class.isAssignableFrom(type)) {
+                this.lore = (Collection<ITextComponent>) lore;
                 return this;
             } else if(String.class.isAssignableFrom(type)) {
                 return this.lore((Collection<String>) lore);
@@ -134,20 +121,20 @@ public class GooeyButton extends ButtonBase {
         protected ItemStack buildDisplay() {
             if (title != null) {
                 IFormattableTextComponent result = new StringTextComponent("")
-                        .setStyle(Style.EMPTY.setItalic(false))
-                        .appendSibling(this.title);
-                display.setDisplayName(result);
+                        .setStyle(Style.EMPTY.withItalic(false))
+                        .append(this.title);
+                display.setHoverName(result);
             }
 
             if (!lore.isEmpty()) {
                 ListNBT nbtLore = new ListNBT();
                 for (ITextComponent line : lore) {
                     IFormattableTextComponent result = new StringTextComponent("")
-                            .setStyle(Style.EMPTY.setItalic(false))
-                            .appendSibling(line);
+                            .setStyle(Style.EMPTY.withItalic(false))
+                            .append(line);
                     nbtLore.add(StringNBT.valueOf(ITextComponent.Serializer.toJson(result)));
                 }
-                display.getOrCreateChildTag("display").put("Lore", nbtLore);
+                display.getOrCreateTagElement("display").put("Lore", nbtLore);
             }
 
             if (!this.hideFlags.isEmpty() && display.hasTag())

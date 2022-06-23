@@ -25,8 +25,8 @@ public abstract class Template extends UpdateEmitter<Template> {
 
         for (TemplateSlot slot : slots) {
             this.slots.add(slot);
-            this.displayStacks.add(slot.getStack());
-            slot.subscribe(this, (update) -> displayStacks.set(update.getSlotIndex(), update.getStack()));
+            this.displayStacks.add(slot.getItem());
+            slot.subscribe(this, (update) -> displayStacks.set(update.getSlotIndex(), update.getItem()));
         }
     }
 

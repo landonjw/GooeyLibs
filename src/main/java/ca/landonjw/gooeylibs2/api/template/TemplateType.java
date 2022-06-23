@@ -10,23 +10,23 @@ public enum TemplateType {
     CHEST(template -> {
         switch (template.getSize() / 9) {
             case 1:
-                return ContainerType.GENERIC_9X1;
+                return ContainerType.GENERIC_9x1;
             case 2:
-                return ContainerType.GENERIC_9X2;
+                return ContainerType.GENERIC_9x2;
             case 3:
-                return ContainerType.GENERIC_9X3;
+                return ContainerType.GENERIC_9x3;
             case 4:
-                return ContainerType.GENERIC_9X4;
+                return ContainerType.GENERIC_9x4;
             case 5:
-                return ContainerType.GENERIC_9X5;
+                return ContainerType.GENERIC_9x5;
             default:
-                return ContainerType.GENERIC_9X6;
+                return ContainerType.GENERIC_9x6;
         }
     }),
     FURNACE(template -> ContainerType.FURNACE),
     BREWING_STAND(template -> ContainerType.BREWING_STAND),
     HOPPER(template -> ContainerType.HOPPER),
-    DISPENSER(template -> ContainerType.GENERIC_3X3),
+    DISPENSER(template -> ContainerType.GENERIC_3x3),
     CRAFTING_TABLE(template -> ContainerType.CRAFTING);
 
     private final Function<Template, ContainerType<? extends Container>> containerTypeSupplier;

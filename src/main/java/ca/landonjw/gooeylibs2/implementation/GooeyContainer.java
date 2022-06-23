@@ -45,7 +45,7 @@ public class GooeyContainer extends Container {
 
     public GooeyContainer(@Nonnull ServerPlayerEntity player, @Nonnull Page page) {
         super(page.getTemplate().getTemplateType().getContainerType(page.getTemplate()), 1);
-        this.server = player.world.getServer();
+        this.server = player.level.getServer();
         this.player = player;
 
         this.page = page;
@@ -83,12 +83,12 @@ public class GooeyContainer extends Container {
         if (inventoryTemplate == null) {
             // Sets the slots for the main inventory.
             for (int i = 9; i < 36; i++) {
-                GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
+                GooeyButton button = GooeyButton.of(player.inventory.items.get(i));
                 addSlot(new TemplateSlot(button, i - 9, 0, 0));
             }
             // Sets the slots for the hotbar.
             for (int i = 0; i < 9; i++) {
-                GooeyButton button = GooeyButton.of(player.inventory.mainInventory.get(i));
+                GooeyButton button = GooeyButton.of(player.inventory.items.get(i));
                 addSlot(new TemplateSlot(button, i + 27, 0, 0));
             }
         } else {
@@ -104,7 +104,7 @@ public class GooeyContainer extends Container {
     }
 
     private void unbindSlots() {
-        inventorySlots.forEach(slot -> {
+        this.slots.forEach(slot -> {
             ((TemplateSlot) slot).unsubscribe(this);
         });
         if (inventoryTemplate != null) {
@@ -116,11 +116,11 @@ public class GooeyContainer extends Container {
 
     private void updateSlotStack(int index, ItemStack stack, boolean playerInventory) {
         if (playerInventory) {
-            SSetSlotPacket setSlot = new SSetSlotPacket(windowId, page.getTemplate().getSize() + index, stack);
-            player.connection.sendPacket(setSlot);
+            SSetSlotPacket setSlot = new SSetSlotPacket(this.containerId, page.getTemplate().getSize() + index, stack);
+            player.connection.send(setSlot);
         } else {
-            SSetSlotPacket setSlot = new SSetSlotPacket(windowId, index, stack);
-            player.connection.sendPacket(setSlot);
+            SSetSlotPacket setSlot = new SSetSlotPacket(this.containerId, index, stack);
+            player.connection.send(setSlot);
         }
     }
 
@@ -142,14 +142,14 @@ public class GooeyContainer extends Container {
 
     private boolean isSlotInPlayerInventory(int slot) {
         int templateSize = page.getTemplate().getSize();
-        return slot >= templateSize && slot - templateSize < player.container.inventorySlots.size();
+        return slot >= templateSize && slot - templateSize < player.containerMenu.slots.size();
     }
 
     private ItemStack getItemAtSlot(int slot) {
-        if (slot == -999 || slot >= inventorySlots.size()) {
+        if (slot == -999 || slot >= slots.size()) {
             return ItemStack.EMPTY;
         }
-        return inventorySlots.get(slot).getStack();
+        return slots.get(slot).getItem();
     }
 
     private Button getButton(int slot) {
@@ -172,20 +172,20 @@ public class GooeyContainer extends Container {
 
     public void open() {
         player.closeContainer();
-        player.openContainer = this;
-        player.currentWindowId = windowId;
+        player.containerMenu = this;
+        player.containerCounter = player.containerMenu.containerId;
         openWindow();
         page.onOpen(new PageAction(player, page));
     }
 
     private void openWindow() {
         SOpenWindowPacket openWindow = new SOpenWindowPacket(
-                player.currentWindowId,
+                player.containerCounter,
                 page.getTemplate().getTemplateType().getContainerType(page.getTemplate()),
                 page.getTitle()
 //                page.getTemplate().getTemplateType() == TemplateType.CRAFTING_TABLE ? 0 : page.getTemplate().getSize() TODO: Check this works
         );
-        player.connection.sendPacket(openWindow);
+        player.connection.send(openWindow);
         updateAllContainerContents();
     }
 
@@ -198,7 +198,7 @@ public class GooeyContainer extends Container {
     }
 
     @Override
-    public ItemStack slotClick(int slot, int dragType, ClickType clickType, PlayerEntity playerSP) {
+    public ItemStack clicked(int slot, int dragType, ClickType clickType, PlayerEntity playerSP) {
         // Don't do anything if user is only clicking edge of UI.
         if (slot == -1 || slot == -999) {
             return ItemStack.EMPTY;
@@ -212,13 +212,13 @@ public class GooeyContainer extends Container {
          * it will return out.
          */
         if (clickType == ClickType.QUICK_MOVE || clickType == ClickType.PICKUP_ALL || clickType == ClickType.PICKUP) {
-            if (lastClickTick == server.getTickCounter()) {
+            if (lastClickTick == server.getTickCount()) {
                 if (clickType == ClickType.PICKUP) {
                     if (cursorButton != null) {
                         ItemStack clickedItem = getItemAtSlot(slot);
                         ItemStack cursorItem = cursorButton.getDisplay();
 
-                        if (clickedItem.getItem() == cursorItem.getItem() && ItemStack.areItemStackTagsEqual(clickedItem, cursorItem)) {
+                        if (clickedItem.getItem() == cursorItem.getItem() && ItemStack.isSame(clickedItem, cursorItem)) {
                             ItemStack copy = getItemAtSlot(slot).copy();
                             copy.setCount(copy.getCount() + cursorButton.getDisplay().getCount());
                             return copy;
@@ -228,7 +228,7 @@ public class GooeyContainer extends Container {
                 }
                 return ItemStack.EMPTY;
             }
-            lastClickTick = server.getTickCounter();
+            lastClickTick = server.getTickCount();
         }
 
         if (clickType == ClickType.QUICK_CRAFT && dragType == 8) {
@@ -410,7 +410,7 @@ public class GooeyContainer extends Container {
 
     private boolean isSlotOccupied(int slot) {
         if (isSlotInPlayerInventory(slot) && inventoryTemplate == null) {
-            return player.openContainer.inventorySlots.get(getTemplateIndex(slot) + 9).getHasStack();
+            return player.containerMenu.slots.get(getTemplateIndex(slot) + 9).hasItem();
         } else {
             return getButton(slot) != null;
         }
@@ -421,23 +421,23 @@ public class GooeyContainer extends Container {
     }
 
     private void updateAllContainerContents() {
-        player.sendAllContents(player.openContainer, this.getInventory());
+        player.refreshContainer(player.containerMenu, this.getItems());
 
         /*
          * Detects changes in the player's inventory and updates them. This is to prevent desyncs if a player
          * gets items added to their inventory while in the user interface.
          */
-        player.container.detectAndSendChanges();
+        player.containerMenu.broadcastChanges();
         if (inventoryTemplate != null) {
-            player.sendAllContents(player.container, inventoryTemplate.getFullDisplay(player));
+            player.refreshContainer(player.containerMenu, inventoryTemplate.getFullDisplay(player));
         } else {
-            player.sendAllContents(player.container, player.container.getInventory());
+            player.refreshContainer(player.containerMenu, player.containerMenu.getItems());
         }
     }
 
     private void setPlayersCursor(ItemStack stack) {
         SSetSlotPacket setCursorSlot = new SSetSlotPacket(-1, 0, stack);
-        player.connection.sendPacket(setCursorSlot);
+        player.connection.send(setCursorSlot);
     }
 
     private void setButton(int slot, Button button) {
@@ -456,18 +456,13 @@ public class GooeyContainer extends Container {
     }
 
     @Override
-    public boolean canInteractWith(PlayerEntity player) {
-        return true;
-    }
-
-    @Override
-    public void onContainerClosed(PlayerEntity playerIn) {
+    public void removed(PlayerEntity playerIn) {
         if (closing) return;
 
         closing = true;
         page.onClose(new PageAction(player, page));
         page.unsubscribe(this);
-        this.inventorySlots.forEach((slot) -> ((TemplateSlot) slot).unsubscribe(this));
+        this.slots.forEach((slot) -> ((TemplateSlot) slot).unsubscribe(this));
         if (inventoryTemplate != null) {
             for (int i = 0; i < inventoryTemplate.getSize(); i++) {
                 inventoryTemplate.getSlot(i).unsubscribe(this);
@@ -475,8 +470,13 @@ public class GooeyContainer extends Container {
         }
         MinecraftForge.EVENT_BUS.unregister(this);
 
-        player.container.detectAndSendChanges();
-        player.sendAllContents(player.container, player.container.getInventory());
+        super.removed(playerIn);
+        player.containerMenu.broadcastChanges();
+        player.refreshContainer(player.containerMenu, player.containerMenu.getItems());
     }
 
+    @Override
+    public boolean stillValid(PlayerEntity p_75145_1_) {
+        return true;
+    }
 }
