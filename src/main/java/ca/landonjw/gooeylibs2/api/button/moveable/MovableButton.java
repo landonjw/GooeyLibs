@@ -1,19 +1,14 @@
 package ca.landonjw.gooeylibs2.api.button.moveable;
 
-import ca.landonjw.gooeylibs2.api.adventure.ForgeTranslator;
 import ca.landonjw.gooeylibs2.api.button.ButtonAction;
 import ca.landonjw.gooeylibs2.api.button.GooeyButton;
-import com.google.common.collect.Lists;
-import net.kyori.adventure.text.Component;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.text.ITextComponent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.List;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 
 public class MovableButton extends GooeyButton implements Movable {
 
@@ -58,14 +53,6 @@ public class MovableButton extends GooeyButton implements Movable {
         public Builder title(@Nullable ITextComponent title) {
             super.title(title);
             return this;
-        }
-
-        public Builder title(@Nullable Component title) {
-            if(title == null) {
-                return this;
-            }
-
-            return this.title(ForgeTranslator.asMinecraft(title));
         }
 
         public Builder lore(@Nullable Collection<String> lore) {

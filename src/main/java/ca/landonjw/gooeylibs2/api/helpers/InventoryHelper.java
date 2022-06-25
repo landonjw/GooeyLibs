@@ -36,13 +36,13 @@ public class InventoryHelper {
          * the hotbar in template is always after the main inventory slots.
          */
         if (inventorySlot >= 27) {
-            player.inventory.setInventorySlotContents(inventorySlot - 27, stack.copy());
+            player.inventory.setItem(inventorySlot - 27, stack.copy());
         } else {
-            player.inventory.setInventorySlotContents(inventorySlot + 9, stack.copy());
+            player.inventory.setItem(inventorySlot + 9, stack.copy());
         }
 
-        if (player.openContainer instanceof GooeyContainer) {
-            GooeyContainer container = (GooeyContainer) player.openContainer;
+        if (player.containerMenu instanceof GooeyContainer) {
+            GooeyContainer container = (GooeyContainer) player.containerMenu;
             Task.builder().execute(container::refresh).build();
         }
     }
@@ -70,10 +70,10 @@ public class InventoryHelper {
     public static void addToInventorySlot(@Nonnull ServerPlayerEntity player, @Nonnull ItemStack stack) {
         if (stack == ItemStack.EMPTY) return;
 
-        player.inventory.addItemStackToInventory(stack.copy());
+        player.inventory.add(stack.copy());
 
-        if (player.openContainer instanceof GooeyContainer) {
-            GooeyContainer container = (GooeyContainer) player.openContainer;
+        if (player.containerMenu instanceof GooeyContainer) {
+            GooeyContainer container = (GooeyContainer) player.containerMenu;
             Task.builder().execute(container::refresh).build();
         }
     }
@@ -94,9 +94,9 @@ public class InventoryHelper {
          * the hotbar in template is always after the main inventory slots.
          */
         if (inventorySlot >= 27) {
-            return player.inventory.getStackInSlot(inventorySlot - 27);
+            return player.inventory.getItem(inventorySlot - 27);
         } else {
-            return player.inventory.getStackInSlot(inventorySlot + 9);
+            return player.inventory.getItem(inventorySlot + 9);
         }
     }
 

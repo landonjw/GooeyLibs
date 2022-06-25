@@ -2,7 +2,6 @@ package ca.landonjw.gooeylibs2.api.page;
 
 import ca.landonjw.gooeylibs2.api.template.Template;
 import ca.landonjw.gooeylibs2.api.template.types.InventoryTemplate;
-import net.kyori.adventure.text.Component;
 import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
@@ -104,12 +103,6 @@ public class LinkedPage extends GooeyPage {
         }
 
         @Override
-        public Builder title(@Nullable Component title) {
-            super.title(title);
-            return this;
-        }
-
-        @Override
         public Builder template(@Nonnull Template template) {
             super.template(template);
             return this;
@@ -180,7 +173,7 @@ public class LinkedPage extends GooeyPage {
                 result.setStyle(parent.getStyle());
             }
         } else {
-            result = parent.copyRaw();
+            result = parent.copy();
             result.setStyle(parent.getStyle());
         }
 
@@ -189,7 +182,7 @@ public class LinkedPage extends GooeyPage {
                 .map(StringTextComponent.class::cast)
                 .collect(Collectors.toList());
         for(StringTextComponent child : children) {
-            result.appendSibling(this.replace(child, pattern, replacement));
+            result.append(this.replace(child, pattern, replacement));
         }
 
         return result;

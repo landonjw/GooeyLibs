@@ -11,7 +11,6 @@ buildscript {
 plugins {
     id 'java'
     id 'java-library'
-    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 apply plugin: 'net.minecraftforge.gradle'
@@ -32,7 +31,7 @@ minecraft {
     // Use non-default mappings at your own risk. they may not always work.
     // Simply re-run your setup task after changing the mappings to update your workspace.
     //mappings channel: 'snapshot', version: '20171003-1.12'
-    mappings channel: 'snapshot', version: '20210309-1.16.5'
+    mappings channel: 'official', version: '1.16.5'
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 
     // accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
@@ -62,10 +61,7 @@ minecraft {
 }
 
 dependencies {
-    minecraft 'net.minecraftforge:forge:1.16.5-36.1.4'
-
-    api 'net.kyori:adventure-api:4.9.3'
-    api 'net.kyori:adventure-text-serializer-gson:4.9.3'
+    minecraft 'net.minecraftforge:forge:1.16.5-36.2.35'
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..
@@ -85,21 +81,9 @@ jar {
 
 // Example configuration to allow publishing using the maven-publish task
 // This is the preferred method to reobfuscate your jar file
-jar.finalizedBy('reobfJar')
+//jar.finalizedBy('reobfJar')
 // However if you are in a multi-project build, dev time needs unobfed jar files, so you can delay the obfuscation until publishing by doing
-//publish.dependsOn('reobfJar')
-
-shadowJar {
-    archiveName = "GooeyLibs-1.16.5-${version}.jar"
-
-    include {
-        dependencies {
-            include(dependency('net.kyori:.*:.*'))
-        }
-    }
-
-    relocate('net.kyori', 'ca.landonjw.gooeylibs2.relocations.kyori')
-}
+publish.finalizedBy('reobfJar')
 
 publishing {
     repositories {
@@ -115,10 +99,9 @@ publishing {
 
     publications {
         mavenJava(MavenPublication) {
-            artifact shadowJar
+            artifactId "${project.modBaseName}"
+            version "${project.mcversion}-${version}"
+            from components.java
         }
     }
 }
-
-reobf { shadowJar {} }
-build.dependsOn(reobfShadowJar)

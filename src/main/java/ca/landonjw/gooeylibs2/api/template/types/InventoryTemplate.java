@@ -22,9 +22,9 @@ public final class InventoryTemplate extends ChestTemplate {
     public ItemStack getDisplayForSlot(@Nonnull ServerPlayerEntity player, int index) {
         TemplateSlot slot = getSlot(index);
         if (slot.getButton().isPresent() && slot.getButton().get() instanceof InventoryListenerButton) {
-            return player.container.getInventory().get(index + 9);
+            return player.containerMenu.getItems().get(index + 9);
         } else {
-            return slot.getStack();
+            return slot.getItem();
         }
     }
 

@@ -19,7 +19,7 @@ public class UIManager {
         Task.builder()
                 .execute((task) -> {
                     timeOutTicks.getAndDecrement();
-                    if (player.openContainer == player.container || timeOutTicks.get() <= 0) {
+                    if (player.containerMenu.containerId == player.containerCounter || timeOutTicks.get() <= 0) {
                         openUIForcefully(player, page);
                         task.setExpired();
                     }
@@ -40,18 +40,7 @@ public class UIManager {
     }
 
     public static void closeUI(@Nonnull ServerPlayerEntity player) {
-        Task.builder()
-                .execute(() -> {
-                    int windowId = player.openContainer == null ? 0 : player.openContainer.windowId;
-
-                    CCloseWindowPacket pclient = new CCloseWindowPacket();
-                    ObfuscationReflectionHelper.setPrivateValue(CCloseWindowPacket.class, pclient, windowId, "windowId");
-                    SCloseWindowPacket pserver = new SCloseWindowPacket(windowId);
-
-                    player.connection.processCloseWindow(pclient);
-                    player.connection.sendPacket(pserver);
-                })
-                .build();
+        Task.builder().execute(player::closeContainer).build();
     }
 
 }

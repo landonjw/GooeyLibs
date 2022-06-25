@@ -48,12 +48,12 @@ public final class TemplateSlot extends Slot implements Subject<TemplateSlot> {
     }
 
     @Override
-    public ItemStack getStack() {
+    public ItemStack getItem() {
         return (button != null) ? button.getDisplay() : ItemStack.EMPTY;
     }
 
     @Override
-    public boolean isItemValid(ItemStack stack) {
+    public boolean mayPlace(ItemStack stack) {
         return false;
     }
 
